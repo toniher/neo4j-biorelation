@@ -1,4 +1,4 @@
-package cau.cat.neo4j.biorelation.rest;
+package cat.cau.neo4j.biorelation.rest;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
