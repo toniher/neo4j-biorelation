@@ -473,6 +473,8 @@ public class ParentDistance {
 		return pathNodes;
 	}
 	
+	// Reference: http://neo4j.com/docs/stable/tutorials-java-embedded-graph-algo.html
+	
 	private Iterable<org.neo4j.graphdb.Path> shortestPath( Node source, Node target, String[] types, Integer depth ) {
 		
 		Expander expander;
