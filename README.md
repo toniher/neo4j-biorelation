@@ -1,5 +1,7 @@
 # Biorelation Neo4j unmanaged extension
 
+## WARNING: plugin does not work with last Neo4j version. Work under progress.
+
 This is an unmanaged extension. Details at: http://neo4j.com/docs/stable/server-unmanaged-extensions.html 
 
 1. Build it: 
