@@ -1,7 +1,5 @@
 package cat.cau.neo4j.biorelation.rest;
 
-import org.codehaus.jackson.map.ObjectMapper;
-
 import org.neo4j.graphdb.GraphDatabaseService;
 
 import org.neo4j.graphdb.Node;
@@ -13,16 +11,11 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 
 import org.neo4j.graphdb.PathExpanders;
 
-
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.kernel.Traversal;
 import org.neo4j.graphdb.Direction;
-
-import org.neo4j.graphdb.traversal.*;
 
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
-import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Expander;
 
 import com.eclipsesource.json.JsonObject;
