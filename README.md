@@ -1,7 +1,5 @@
 # Biorelation Neo4j unmanaged extension
 
-## WARNING: plugin does not work with last Neo4j version. Work under progress.
-
 This is an unmanaged extension. Details at: http://neo4j.com/docs/stable/server-unmanaged-extensions.html 
 
 1. Build it: 
@@ -24,14 +22,18 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
 
     * curl http://localhost:7474/biodb/parent/helloworld -> Dummy
     * curl http://localhost:7474/biodb/parent/distance/tax/9606/10114 -> Distance (hops) between human and guinea pig
+    * curl http://localhost:7474/biodb/parent/path/tax/9606/10114 -> Path between human and guinea pig
     * curl http://localhost:7474/biodb/parent/common/tax/9606-10114 -> LCA between human and guinea pig. Many values allowed
     * curl http://localhost:7474/biodb/parent/distance/go/GO:0004180/GO:0004866 -> Distance (hops) between carboxypeptidase and endopeptidase GOs
+    * curl http://localhost:7474/biodb/parent/path/go/GO:0004180/GO:0004866 -> Path between carboxypeptidase and endopeptidase GOs
     * curl http://localhost:7474/biodb/parent/common/go/GO:0004180-GO:0004866 LCA between carboxypeptidase and endopeptidase GOs
+
 
 ## TODO
 
 * Make tests work.
 * Code cleaning
+* root working in all cases
 * Add further functionality out-of-the-box
 
 
