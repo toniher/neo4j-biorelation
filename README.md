@@ -2,6 +2,13 @@
 
 This is an unmanaged extension. Details at: http://neo4j.com/docs/stable/server-unmanaged-extensions.html 
 
+## REQUIREMENTS
+
+You would need to import NCBI taxonomy and Gene Ontology into your Neo4j Database. The following Py2Neo scripts are used: https://github.com/toniher/biomirror/tree/master/neo4j
+
+
+## INSTALL
+
 1. Build it: 
 
     mvn clean package
@@ -34,6 +41,7 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
 * Make tests work.
 * Code cleaning
 * root working in all cases
+* Dealing with exceptions
 * Add further functionality out-of-the-box
 
 
