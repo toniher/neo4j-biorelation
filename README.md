@@ -38,6 +38,7 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
 
 ## TODO
 
+* Restrict a bit more path finding
 * Make tests work.
 * Code cleaning
 * root working in all cases
