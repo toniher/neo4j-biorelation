@@ -38,12 +38,22 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
 
 ## TODO
 
+
 * Restrict a bit more path finding
+	* Allow different GO options relations (is_a, part_of, etc.)
+* Finding leafnodes
+	* Example for hominids
+
+    MATCH (n:TAXID { id:9604 })<-[r*]-(m:TAXID)
+    where not(()-->m)
+    return distinct m;
+
+* Finding shorter distance leafnode
+
 * Make tests work.
-* Code cleaning
+
 * root working in all cases
 * Dealing with exceptions
-* Add further functionality out-of-the-box
 
 
 
