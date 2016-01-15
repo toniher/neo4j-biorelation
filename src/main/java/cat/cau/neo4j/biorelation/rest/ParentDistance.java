@@ -459,48 +459,61 @@ public class ParentDistance {
 		
 	}
 
-	@GET
-	@Path("/leafnodes/go/{acc}")
-	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	
-		return "To be implemented";
-	}
+	//@GET
+	//@Path("/leafnodes/go/{acc}")
+	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	//
+	//	return "To be implemented";
+	//}
+	//
+	//@GET
+	//@Path("/leafnodes/go/{acc}/closest")
+	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	//
+	//	return "To be implemented";
+	//}
+	//
+	//@GET
+	//@Path("/leafnodes/go/{acc}/farthest")
+	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	//
+	//	return "To be implemented";
+	//}
+	//
+	//@GET
+	//@Path("/leafnodes/tax/{acc}")
+	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	//
+	//	return "To be implemented";
+	//}
+	//
+	//@GET
+	//@Path("/leafnodes/tax/{acc}/closest")
+	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	//
+	//	return "To be implemented";
+	//}
+	//
+	//@GET
+	//@Path("/leafnodes/tax/{acc}/farthest")
+	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	//
+	//	return "To be implemented";
+	//}
 
-	@GET
-	@Path("/leafnodes/go/{acc}/closest")
-	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	
-		return "To be implemented";
-	}
 
-	@GET
-	@Path("/leafnodes/go/{acc}/farthest")
-	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	
-		return "To be implemented";
-	}
-
-	@GET
-	@Path("/leafnodes/tax/{acc}")
-	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	
-		return "To be implemented";
-	}
-
-	@GET
-	@Path("/leafnodes/tax/{acc}/closest")
-	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	
-		return "To be implemented";
-	}
-
-	@GET
-	@Path("/leafnodes/tax/{acc}/farthest")
-	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	
-		return "To be implemented";
-	}
-
+	//private String getAllLeafNodes( String label, String property, String value ) {
+	//
+	//
+	//	//try ( Transaction ignored = db.beginTx();
+	//	//	Result result = db.execute( "MATCH (n:".label." { ".property.":".value." })<-[r*]-(m:".label.") where not(()-->m) return distinct m;" ) ) {
+	//	//	while ( result.hasNext() ) {
+	//	//	}
+	//	//}
+	//
+	//	return "To be implemented";
+	//
+	//}
 
 	private static boolean allElementsTheSame(String[] array) {
 		
