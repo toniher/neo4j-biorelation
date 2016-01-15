@@ -458,7 +458,50 @@ public class ParentDistance {
 		return Response.ok(outputStr, MediaType.APPLICATION_JSON).build();
 		
 	}
+
+	@GET
+	@Path("/leafnodes/go/{acc}")
+	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
 	
+		return "To be implemented";
+	}
+
+	@GET
+	@Path("/leafnodes/go/{acc}/closest")
+	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	
+		return "To be implemented";
+	}
+
+	@GET
+	@Path("/leafnodes/go/{acc}/farthest")
+	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	
+		return "To be implemented";
+	}
+
+	@GET
+	@Path("/leafnodes/tax/{acc}")
+	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	
+		return "To be implemented";
+	}
+
+	@GET
+	@Path("/leafnodes/tax/{acc}/closest")
+	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	
+		return "To be implemented";
+	}
+
+	@GET
+	@Path("/leafnodes/tax/{acc}/farthest")
+	public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
+	
+		return "To be implemented";
+	}
+
+
 	private static boolean allElementsTheSame(String[] array) {
 		
 		if (array.length == 0) {
