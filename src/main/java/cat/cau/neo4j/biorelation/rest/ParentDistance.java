@@ -6,6 +6,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.DynamicLabel;
 
+import org.neo4j.graphdb.Result;
+
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.DynamicRelationshipType;
 
@@ -18,8 +20,13 @@ import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphdb.Expander;
 
+
+import org.neo4j.helpers.collection.IteratorUtil;
+
+
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonArray;
+
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -33,6 +40,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Hashtable;
+import java.util.Map;
 
 //ANCESTOR TAX -> 1
 //
@@ -459,12 +467,18 @@ public class ParentDistance {
 		
 	}
 
-	//@GET
-	//@Path("/leafnodes/go/{acc}")
-	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	//
-	//	return "To be implemented";
-	//}
+	@GET
+	@Path("/leafnodes/go/{acc}")
+	public Response getCommonGOPath(@PathParam("acc") String value, @Context GraphDatabaseService db) throws IOException {
+	
+		String label = "GO_TERM";
+		String property = "acc";
+
+		ArrayList<Node> leafNodes = getAllLeafNodes( label, property, value, db );
+		// TODO: Handle leafNodes
+		String output = "tal";
+		return Response.ok( output, MediaType.APPLICATION_JSON).build();
+	}
 	//
 	//@GET
 	//@Path("/leafnodes/go/{acc}/closest")
@@ -502,18 +516,30 @@ public class ParentDistance {
 	//}
 
 
-	//private String getAllLeafNodes( String label, String property, String value ) {
-	//
-	//
-	//	//try ( Transaction ignored = db.beginTx();
-	//	//	Result result = db.execute( "MATCH (n:".label." { ".property.":".value." })<-[r*]-(m:".label.") where not(()-->m) return distinct m;" ) ) {
-	//	//	while ( result.hasNext() ) {
-	//	//	}
-	//	//}
-	//
-	//	return "To be implemented";
-	//
-	//}
+	private ArrayList<Node> getAllLeafNodes( String label, String property, String value, GraphDatabaseService db ) {
+	
+	
+		String tal = "hh";
+		String query = "MATCH (n:"+label+" { "+property+":'"+value+"' })<-[r*]-(m:"+label+") where not(()-->m) return distinct m;";
+	
+		ArrayList<Node> leafNodes = new ArrayList<Node>();
+
+		try ( Transaction tx = db.beginTx();
+			Result result = db.execute( query )
+
+		){
+			Iterator<Node> node_column = result.columnAs( "m" );
+			for ( Node node : IteratorUtil.asIterable( node_column ) ) {
+				leafNodes.add( node );
+			}
+	
+			tx.success();
+		
+		}
+	
+		return leafNodes;
+	
+	}
 
 	private static boolean allElementsTheSame(String[] array) {
 		
