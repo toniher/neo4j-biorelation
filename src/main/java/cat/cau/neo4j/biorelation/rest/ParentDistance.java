@@ -27,6 +27,7 @@ import org.neo4j.helpers.collection.IteratorUtil;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonArray;
 
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -482,42 +483,6 @@ public class ParentDistance {
 		String outputStr = jsonArray.toString();
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
 	}
-	//
-	//@GET
-	//@Path("/leafnodes/go/{acc}/closest")
-	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	//
-	//	return "To be implemented";
-	//}
-	//
-	//@GET
-	//@Path("/leafnodes/go/{acc}/farthest")
-	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	//
-	//	return "To be implemented";
-	//}
-	//
-	//@GET
-	//@Path("/leafnodes/tax/{acc}")
-	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	//
-	//	return "To be implemented";
-	//}
-	//
-	//@GET
-	//@Path("/leafnodes/tax/{acc}/closest")
-	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	//
-	//	return "To be implemented";
-	//}
-	//
-	//@GET
-	//@Path("/leafnodes/tax/{acc}/farthest")
-	//public Response getCommonGOPath(@PathParam("acc") String acc1, @Context GraphDatabaseService db) throws IOException {
-	//
-	//	return "To be implemented";
-	//}
-
 
 	private ArrayList<Node> getAllLeafNodes( String label, String property, String value, GraphDatabaseService db ) {
 	
@@ -561,8 +526,21 @@ public class ParentDistance {
 				while ( itrProp.hasNext() ) {
 
 						String prop = itrProp.next();
-						// TODO: Handle if prop value is int or float
-						jsonObject.add( prop, lNode.getProperty( prop ).toString() );
+						String value = lNode.getProperty( prop ).toString();
+						
+						if ( StringUtils.isNumeric( value ) ) {
+							int valueInt = Integer.parseInt( value );
+							double valueFloat = Float.parseFloat( value );
+							
+							if ( valueInt == valueFloat ) {
+								jsonObject.add( prop, valueInt );
+							} else {
+								jsonObject.add( prop, valueFloat );
+							}
+						} else {
+						
+							jsonObject.add( prop, value );
+						}
 				}
 
 				tx.success();
