@@ -461,6 +461,7 @@ public class ParentDistance {
 			JsonObject jsonObject = new JsonObject().add( "id", lcaId ).add( "scientific_name", lcaScientific ).add( "rank", lcaRank );
 			outputStr = jsonObject.toString();
 		
+			tx.success();
 		}
 		
 		return Response.ok(outputStr, MediaType.APPLICATION_JSON).build();
@@ -551,13 +552,22 @@ public class ParentDistance {
 			
 			Node lNode = nodeIterator.next();
 
-			// TODO: Adapt for more generic
-			String lAcc = lNode.getProperty("acc").toString();
-			String lType = lNode.getProperty("term_type").toString();
-			String lName = lNode.getProperty("name").toString();
-			String lDefinition = lNode.getProperty("definition").toString();
+			JsonObject jsonObject = new JsonObject();
 
-			JsonObject jsonObject = new JsonObject().add( "acc", lAcc ).add( "term_type", lType ).add( "name", lName ).add( "definition", lDefinition );
+			try (Transaction tx = db.beginTx()) {
+
+				Iterable<String> lNodeProps = lNode.getPropertyKeys();
+				Iterator<String> itrProp = lNodeProps.iterator();
+				while ( itrProp.hasNext() ) {
+
+						String prop = itrProp.next();
+						// TODO: Handle if prop value is int or float
+						jsonObject.add( prop, lNode.getProperty( prop ).toString() );
+				}
+
+				tx.success();
+			}
+
 			jsonArray.add( jsonObject );
 
 		}
