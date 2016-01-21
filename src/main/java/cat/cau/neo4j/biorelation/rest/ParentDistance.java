@@ -477,7 +477,7 @@ public class ParentDistance {
 
 		ArrayList<Node> leafNodes = getAllLeafNodes( label, property, value, db );
 		// TODO: Handle leafNodes
-		JsonArray jsonArray = arrayListNodes2JSON( leafNodes );
+		JsonArray jsonArray = arrayListNodes2JSON( leafNodes, db );
 		
 		String outputStr = jsonArray.toString();
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
@@ -543,7 +543,7 @@ public class ParentDistance {
 	
 	}
 	
-	private JsonArray arrayListNodes2JSON( ArrayList<Node> arrayNodes ) {
+	private JsonArray arrayListNodes2JSON( ArrayList<Node> arrayNodes, GraphDatabaseService db ) {
 		
 		JsonArray jsonArray = new JsonArray();
 		
