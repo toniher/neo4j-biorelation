@@ -476,8 +476,10 @@ public class ParentDistance {
 
 		ArrayList<Node> leafNodes = getAllLeafNodes( label, property, value, db );
 		// TODO: Handle leafNodes
-		String output = "tal";
-		return Response.ok( output, MediaType.APPLICATION_JSON).build();
+		JsonArray jsonArray = arrayListNodes2JSON( leafNodes );
+		
+		String outputStr = jsonArray.toString();
+		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
 	}
 	//
 	//@GET
@@ -519,7 +521,6 @@ public class ParentDistance {
 	private ArrayList<Node> getAllLeafNodes( String label, String property, String value, GraphDatabaseService db ) {
 	
 	
-		String tal = "hh";
 		String query = "MATCH (n:"+label+" { "+property+":'"+value+"' })<-[r*]-(m:"+label+") where not(()-->m) return distinct m;";
 	
 		ArrayList<Node> leafNodes = new ArrayList<Node>();
@@ -539,6 +540,29 @@ public class ParentDistance {
 	
 		return leafNodes;
 	
+	}
+	
+	private JsonArray arrayListNodes2JSON( ArrayList<Node> arrayNodes ) {
+		
+		JsonArray jsonArray = new JsonArray();
+		
+		Iterator<Node> nodeIterator = arrayNodes.iterator();
+		while(nodeIterator.hasNext()){
+			
+			Node lNode = nodeIterator.next();
+
+			// TODO: Adapt for more generic
+			String lAcc = lNode.getProperty("acc").toString();
+			String lType = lNode.getProperty("term_type").toString();
+			String lName = lNode.getProperty("name").toString();
+			String lDefinition = lNode.getProperty("definition").toString();
+
+			JsonObject jsonObject = new JsonObject().add( "acc", lAcc ).add( "term_type", lType ).add( "name", lName ).add( "definition", lDefinition );
+			jsonArray.add( jsonObject );
+
+		}
+		
+		return jsonArray;
 	}
 
 	private static boolean allElementsTheSame(String[] array) {
