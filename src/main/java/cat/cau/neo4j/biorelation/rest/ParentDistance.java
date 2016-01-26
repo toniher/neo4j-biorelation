@@ -493,23 +493,31 @@ public class ParentDistance {
 		ArrayList<Node> leafNodes = getAllLeafNodes( labelStr, property, value, db );
 
 		Label label = DynamicLabel.label( labelStr );
+		Node queryNode;
+		JsonArray jsonArray;
 
-		Node queryNode = db.findNode( label, property, value );
+		try (Transaction tx = db.beginTx()) {
 			
-		// The relationships we will follow
-		RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
-		RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
+			queryNode = db.findNode( label, property, value );
 			
-		Object[] relations = new Object[4];
-		
-		relations[0] = isa;
-		relations[1] = Direction.OUTGOING;
-		relations[2] = partof;
-		relations[3] = Direction.OUTGOING;
-		
-		
-		ArrayList<Integer> distanceNodes = calcDistanceNodes( leafNodes, queryNode, relations );
-		JsonArray jsonArray = arrayListNodes2JSON( leafNodes, db );
+			// The relationships we will follow
+			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
+			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
+				
+			Object[] relations = new Object[4];
+			
+			relations[0] = isa;
+			relations[1] = Direction.OUTGOING;
+			relations[2] = partof;
+			relations[3] = Direction.OUTGOING;
+				
+			ArrayList<Integer> distanceNodes = calcDistanceNodes( leafNodes, queryNode, relations );
+	
+			jsonArray = arrayListNodes2JSONextraInt( leafNodes, distanceNodes, "distance", db );
+	
+			tx.success();
+	
+		}
 		
 		String outputStr = jsonArray.toString();
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
@@ -600,6 +608,58 @@ public class ParentDistance {
 		return jsonArray;
 	}
 
+	private JsonArray arrayListNodes2JSONextraInt( ArrayList<Node> arrayNodes, ArrayList<Integer> arrayInteger, String extra, GraphDatabaseService db ) {
+		
+		JsonArray jsonArray = new JsonArray();
+		
+		Integer intIter = 0;
+		
+		Iterator<Node> nodeIterator = arrayNodes.iterator();
+		while(nodeIterator.hasNext()){
+			
+			Node lNode = nodeIterator.next();
+
+			JsonObject jsonObject = new JsonObject();
+
+			try (Transaction tx = db.beginTx()) {
+
+				Iterable<String> lNodeProps = lNode.getPropertyKeys();
+				Iterator<String> itrProp = lNodeProps.iterator();
+				while ( itrProp.hasNext() ) {
+
+						String prop = itrProp.next();
+						String value = lNode.getProperty( prop ).toString();
+						
+						if ( StringUtils.isNumeric( value ) ) {
+							int valueInt = Integer.parseInt( value );
+							double valueFloat = Float.parseFloat( value );
+							
+							if ( valueInt == valueFloat ) {
+								jsonObject.add( prop, valueInt );
+							} else {
+								jsonObject.add( prop, valueFloat );
+							}
+						} else {
+						
+							jsonObject.add( prop, value );
+						}
+						
+						// Adding extra arrayvalue
+						jsonObject.add( extra, arrayInteger.get( intIter ) );
+						
+				}
+
+				tx.success();
+			}
+
+			jsonArray.add( jsonObject );
+			intIter++;
+
+		}
+		
+		return jsonArray;
+	}
+	
 	private static boolean allElementsTheSame(String[] array) {
 		
 		if (array.length == 0) {
