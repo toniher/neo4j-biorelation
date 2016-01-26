@@ -471,19 +471,50 @@ public class ParentDistance {
 
 	@GET
 	@Path("/leafnodes/go/{acc}")
-	public Response getCommonGOPath(@PathParam("acc") String value, @Context GraphDatabaseService db) throws IOException {
+	public Response getLeafNodesGO(@PathParam("acc") String value, @Context GraphDatabaseService db) throws IOException {
 	
-		String label = "GO_TERM";
+		String labelStr = "GO_TERM";
 		String property = "acc";
 
-		ArrayList<Node> leafNodes = getAllLeafNodes( label, property, value, db );
-		// TODO: Handle leafNodes
+		ArrayList<Node> leafNodes = getAllLeafNodes( labelStr, property, value, db );
 		JsonArray jsonArray = arrayListNodes2JSON( leafNodes, db );
 		
 		String outputStr = jsonArray.toString();
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
 	}
 
+	@GET
+	@Path("/leafnodes/go/{acc}/distance")
+	public Response getLeafNodesGODistance(@PathParam("acc") String value, @Context GraphDatabaseService db) throws IOException {
+	
+		String labelStr = "GO_TERM";
+		String property = "acc";
+		
+		ArrayList<Node> leafNodes = getAllLeafNodes( labelStr, property, value, db );
+
+		Label label = DynamicLabel.label( labelStr );
+
+		Node queryNode = db.findNode( label, property, value );
+			
+		// The relationships we will follow
+		RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
+		RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
+			
+		Object[] relations = new Object[4];
+		
+		relations[0] = isa;
+		relations[1] = Direction.OUTGOING;
+		relations[2] = partof;
+		relations[3] = Direction.OUTGOING;
+		
+		
+		ArrayList<Integer> distanceNodes = calcDistanceNodes( leafNodes, queryNode, relations );
+		JsonArray jsonArray = arrayListNodes2JSON( leafNodes, db );
+		
+		String outputStr = jsonArray.toString();
+		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
+	}	
+	
 	private ArrayList<Node> getAllLeafNodes( String label, String property, String value, GraphDatabaseService db ) {
 	
 	
@@ -506,6 +537,22 @@ public class ParentDistance {
 	
 		return leafNodes;
 	
+	}
+	
+	private ArrayList<Integer> calcDistanceNodes( ArrayList<Node> arrayNodes, Node queryNode, Object[] relations ) {
+	
+		ArrayList<Integer> distances = new ArrayList<Integer>();
+		
+		Iterator<Node> nodeIterator = arrayNodes.iterator();
+		while(nodeIterator.hasNext()){
+			
+			Node lNode = nodeIterator.next();
+			
+			Integer distance = shortestDistance( queryNode, lNode, 100, relations );
+			distances.add( distance );
+		}
+		
+		return distances;
 	}
 	
 	private JsonArray arrayListNodes2JSON( ArrayList<Node> arrayNodes, GraphDatabaseService db ) {
