@@ -69,39 +69,71 @@ public class ParentDistance {
 	}
 
 	@GET
-	@Path("/distance/go/{acc1}/{acc2}")
-	public Response getCommonGODistance(@PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @Context GraphDatabaseService db) throws IOException {
+	@Path("/distance/{type}/{acc1}/{acc2}")
+	public Response getCommonTaxDistance(@PathParam("type") String type, @PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @Context GraphDatabaseService db) throws IOException {
 		
 		Integer maxdistance = 100;
-		
-		Label label = DynamicLabel.label( "GO_TERM" );
-		String property = "acc";
 
-		try (Transaction tx = db.beginTx()) {
-			
-			Node node1 = db.findNode( label, property, acc1 );
-			Node node2 = db.findNode( label, property, acc2 );
+		Label label;
+		String property;
+		String proptype = "string";
 
-			tx.success();
-			
+		Object[] relations;
+
+		if ( type == "go" ) {
+			label = DynamicLabel.label( "GO_TERM" );
+			property = "acc";
+
 			// The relationships we will follow
 			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
 			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
 			
-			Object[] relations = new Object[4];
+			relations = new Object[4];
 			
 			relations[0] = isa;
 			relations[1] = Direction.OUTGOING;
 			relations[2] = partof;
 			relations[3] = Direction.OUTGOING;
 
-			maxdistance = shortestDistance( node1, node2, 100, relations );
+		} else {
+			label = DynamicLabel.label( "TAXID" );
+			property = "id";
+			proptype = "int";
+
+			// The relationships we will follow
+			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
+			
+			relations = new Object[2];
+			
+			relations[0] = parent;
+			relations[1] = Direction.OUTGOING;
+		}
+		
+		try (Transaction tx = db.beginTx()) {
+			
+			Node node1;
+			Node node2;
+
+			if ( proptype == "int" ) {
+	
+				node1 = db.findNode( label, property, Integer.parseInt( acc1 ) );
+				node2 = db.findNode( label, property, Integer.parseInt( acc2 ) );
+				
+			} else {
+
+				node1 = db.findNode( label, property, acc1 );
+				node2 = db.findNode( label, property, acc2 );
+			}
+
+			tx.success();
+				
+			maxdistance = shortestDistance( node1, node2, maxdistance, relations );
 			
 		}
-
+	
 		JsonObject jsonObject = new JsonObject().add( "distance", maxdistance );
 		String jsonStr = jsonObject.toString();
-
+	
 		return Response.ok( jsonStr, MediaType.APPLICATION_JSON).build();
 	}
 
@@ -283,42 +315,7 @@ public class ParentDistance {
 		return Response.ok(outputStr, MediaType.APPLICATION_JSON).build();
 		
 	}
-	
-	@GET
-	@Path("/distance/tax/{acc1}/{acc2}")
-	public Response getCommonTaxDistance(@PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @Context GraphDatabaseService db) throws IOException {
-		
-		Integer maxdistance = 100;
-		
-		Label label = DynamicLabel.label( "TAXID" );
-		String property = "id";
-		
-		try (Transaction tx = db.beginTx()) {
-			
-			// Taxonomy in integer
-			Node node1 = db.findNode( label, property, Integer.parseInt( acc1 ) );
-			Node node2 = db.findNode( label, property, Integer.parseInt( acc2 ) );
-			
-			tx.success();
-	
-			// The relationships we will follow
-			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
-			
-			Object[] relations = new Object[2];
-			
-			relations[0] = parent;
-			relations[1] = Direction.OUTGOING;
-				
-			maxdistance = shortestDistance( node1, node2, 100, relations );
-			
-		}
-	
-		JsonObject jsonObject = new JsonObject().add( "distance", maxdistance );
-		String jsonStr = jsonObject.toString();
-	
-		return Response.ok( jsonStr, MediaType.APPLICATION_JSON).build();
-	}
-	
+
 	// Path between two nodes
 	@GET
 	@Path("/path/tax/{acc1}/{acc2}")
