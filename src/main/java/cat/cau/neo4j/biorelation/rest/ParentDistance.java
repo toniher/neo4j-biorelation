@@ -80,7 +80,7 @@ public class ParentDistance {
 
 		Object[] relations;
 
-		if ( type == "go" ) {
+		if ( type.equals( "go" ) ) {
 			label = DynamicLabel.label( "GO_TERM" );
 			property = "acc";
 
@@ -114,7 +114,7 @@ public class ParentDistance {
 			Node node1;
 			Node node2;
 
-			if ( proptype == "int" ) {
+			if ( proptype.equals( "int" ) ) {
 	
 				node1 = db.findNode( label, property, Integer.parseInt( acc1 ) );
 				node2 = db.findNode( label, property, Integer.parseInt( acc2 ) );
@@ -533,7 +533,7 @@ public class ParentDistance {
 		String property;
 		String relproperty;
 
-		if ( type == "go" ) {
+		if ( type.equals( "go" ) ) {
 			label = DynamicLabel.label( "GO_TERM" );
 			property = "acc";
 			relproperty = "has_go";
