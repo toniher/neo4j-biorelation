@@ -38,17 +38,18 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
 
 ## TODO
 
+* Simplify functions
 
 * Restrict a bit more path finding
 	* Allow different GO options relations (is_a, part_of, etc.)
-* Finding leafnodes
-	* Example for hominids
 
     MATCH (n:TAXID { id:9604 })<-[r*]-(m:TAXID)
     where not(()-->m)
     return distinct m;
 
-* Finding shorter distance leafnode
+* curl http://localhost:7474/biodb/parent/rels/go/MOLID -> GO information about this MOLID
+* curl http://localhost:7474/biodb/parent/rels/tax/MOLID -> Taxon information about this MOLID
+
 
 * Make tests work.
 

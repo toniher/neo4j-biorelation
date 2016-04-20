@@ -7,6 +7,7 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.DynamicLabel;
 
 import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.ResourceIterator;
 
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.DynamicRelationshipType;
@@ -521,7 +522,52 @@ public class ParentDistance {
 		
 		String outputStr = jsonArray.toString();
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
-	}	
+	}
+
+	@GET
+	@Path("/rels/{type}/{acc}")
+	public Response getRelations(@PathParam("type") String type, @PathParam("acc") String list, @Context GraphDatabaseService db) throws IOException {
+
+
+		Label nodelabel = DynamicLabel.label( "MOL" );
+		String nodeproperty = "synonyms"; // Array synonyms
+
+		Label label;
+		String property;
+		String relproperty;
+
+		if ( type == "go" ) {
+			label = DynamicLabel.label( "GO_TERM" );
+			property = "acc";
+			relproperty = "has_go";
+		} else {
+			label = DynamicLabel.label( "TAXID" );
+			property = "id";
+			relproperty = "has_taxon";
+		}
+
+		String[] arrayAcc = list.split("-",-1); 
+
+		ArrayList<Node> listNodes = new ArrayList<Node>();
+
+		for (int i = 0; i < arrayAcc.length; i++) {
+			ResourceIterator<Node> resultNodes = db.findNodes( nodelabel, nodeproperty, arrayAcc[i] );
+
+			while(resultNodes.hasNext()){
+				
+				Node rNode = resultNodes.next();
+				listNodes.add( rNode );
+			}
+
+		}
+
+		// For all listNodes
+		// Get relationships, return according above
+		
+		String outputStr = "KK";
+		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
+
+	}
 	
 	private ArrayList<Node> getAllLeafNodes( String label, String property, String value, GraphDatabaseService db ) {
 	
