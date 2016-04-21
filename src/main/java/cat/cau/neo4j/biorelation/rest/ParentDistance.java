@@ -84,29 +84,11 @@ public class ParentDistance {
 			label = DynamicLabel.label( "GO_TERM" );
 			property = "acc";
 
-			// The relationships we will follow
-			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
-			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
-			
-			relations = new Object[4];
-			
-			relations[0] = isa;
-			relations[1] = Direction.OUTGOING;
-			relations[2] = partof;
-			relations[3] = Direction.OUTGOING;
-
 		} else {
 			label = DynamicLabel.label( "TAXID" );
 			property = "id";
 			proptype = "int";
 
-			// The relationships we will follow
-			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
-			
-			relations = new Object[2];
-			
-			relations[0] = parent;
-			relations[1] = Direction.OUTGOING;
 		}
 		
 		try (Transaction tx = db.beginTx()) {
@@ -127,7 +109,7 @@ public class ParentDistance {
 
 			tx.success();
 				
-			maxdistance = shortestDistance( node1, node2, maxdistance, relations );
+			maxdistance = shortestDistance( node1, node2, maxdistance, type );
 			
 		}
 	
@@ -509,7 +491,7 @@ public class ParentDistance {
 			relations[2] = partof;
 			relations[3] = Direction.OUTGOING;
 				
-			ArrayList<Integer> distanceNodes = calcDistanceNodes( leafNodes, queryNode, relations );
+			ArrayList<Integer> distanceNodes = calcDistanceNodes( leafNodes, queryNode, "go" );
 	
 			jsonArray = arrayListNodes2JSONextraInt( leafNodes, distanceNodes, "distance", db );
 	
@@ -590,7 +572,7 @@ public class ParentDistance {
 	
 	}
 	
-	private ArrayList<Integer> calcDistanceNodes( ArrayList<Node> arrayNodes, Node queryNode, Object[] relations ) {
+	private ArrayList<Integer> calcDistanceNodes( ArrayList<Node> arrayNodes, Node queryNode, String type ) {
 	
 		ArrayList<Integer> distances = new ArrayList<Integer>();
 		
@@ -599,7 +581,7 @@ public class ParentDistance {
 			
 			Node lNode = nodeIterator.next();
 			
-			Integer distance = shortestDistance( queryNode, lNode, 100, relations );
+			Integer distance = shortestDistance( queryNode, lNode, 100, type );
 			distances.add( distance );
 		}
 		
@@ -731,13 +713,30 @@ public class ParentDistance {
 		return rootGOacc;
 	}
 	
-	private Integer shortestDistance( Node source, Node target, Integer depth, Object... relations ) {
+	private Integer shortestDistance( Node source, Node target, Integer depth, String type ) {
 		
 		Integer maxdistance = 100;
 
-		// Temporary: Any type and direction
-		PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.allTypesAndDirections(), depth );
-		//PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( relations ), depth );
+		PathFinder<org.neo4j.graphdb.Path> finder;
+		
+		if ( type.equals("go") ) {
+		
+			// The relationships we will follow
+			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
+			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
+					
+			PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.OUTGOING, partof, Direction.OUTGOING ), maxdistance );
+
+		
+		} else {
+		
+			// The relationships we will follow
+			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
+		
+			PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypeAndDirection( parent, Direction.OUTGOING ), maxdistance );
+
+		}
+
 		
 		Iterable<org.neo4j.graphdb.Path> ListPaths = finder.findAllPaths( source, target );
 		
