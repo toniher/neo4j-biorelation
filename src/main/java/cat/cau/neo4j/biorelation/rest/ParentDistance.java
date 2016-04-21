@@ -121,7 +121,7 @@ public class ParentDistance {
 
 	@GET
 	@Path("/distancedir/{type}/{acc1}/{acc2}")
-	public Response getCommonTaxDistance(@PathParam("type") String type, @PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @Context GraphDatabaseService db) throws IOException {
+	public Response getCommonTaxDistanceDir(@PathParam("type") String type, @PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @Context GraphDatabaseService db) throws IOException {
 		
 		Integer maxdistance = 100;
 
