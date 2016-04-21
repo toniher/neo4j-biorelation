@@ -109,7 +109,7 @@ public class ParentDistance {
 
 			tx.success();
 				
-			maxdistance = shortestDistance( node1, node2, maxdistance, type, '' );
+			maxdistance = shortestDistance( node1, node2, maxdistance, type, "nodirection" );
 			
 		}
 	
@@ -632,7 +632,7 @@ public class ParentDistance {
 			
 			Node lNode = nodeIterator.next();
 			
-			Integer distance = shortestDistance( queryNode, lNode, 100, type, '' );
+			Integer distance = shortestDistance( queryNode, lNode, 100, type, "nodirection" );
 			distances.add( distance );
 		}
 		
