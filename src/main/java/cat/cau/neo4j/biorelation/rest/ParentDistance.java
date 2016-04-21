@@ -530,17 +530,6 @@ public class ParentDistance {
 		try (Transaction tx = db.beginTx()) {
 			
 			queryNode = db.findNode( label, property, value );
-			
-			// The relationships we will follow
-			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
-			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
-				
-			Object[] relations = new Object[4];
-			
-			relations[0] = isa;
-			relations[1] = Direction.OUTGOING;
-			relations[2] = partof;
-			relations[3] = Direction.OUTGOING;
 				
 			ArrayList<Integer> distanceNodes = calcDistanceNodes( leafNodes, queryNode, "go" );
 	
