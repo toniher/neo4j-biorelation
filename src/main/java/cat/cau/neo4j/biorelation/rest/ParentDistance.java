@@ -120,6 +120,57 @@ public class ParentDistance {
 	}
 
 	@GET
+	@Path("/distancedir/{type}/{acc1}/{acc2}")
+	public Response getCommonTaxDistance(@PathParam("type") String type, @PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @Context GraphDatabaseService db) throws IOException {
+		
+		Integer maxdistance = 100;
+
+		Label label;
+		String property;
+		String proptype = "string";
+
+		Object[] relations;
+
+		if ( type.equals( "go" ) ) {
+			label = DynamicLabel.label( "GO_TERM" );
+			property = "acc";
+
+		} else {
+			label = DynamicLabel.label( "TAXID" );
+			property = "id";
+			proptype = "int";
+
+		}
+		
+		try (Transaction tx = db.beginTx()) {
+			
+			Node node1;
+			Node node2;
+
+			if ( proptype.equals( "int" ) ) {
+	
+				node1 = db.findNode( label, property, Integer.parseInt( acc1 ) );
+				node2 = db.findNode( label, property, Integer.parseInt( acc2 ) );
+				
+			} else {
+
+				node1 = db.findNode( label, property, acc1 );
+				node2 = db.findNode( label, property, acc2 );
+			}
+
+			tx.success();
+				
+			maxdistance = shortestDistance( node1, node2, maxdistance, type, "direction" );
+			
+		}
+	
+		JsonObject jsonObject = new JsonObject().add( "distance", maxdistance );
+		String jsonStr = jsonObject.toString();
+	
+		return Response.ok( jsonStr, MediaType.APPLICATION_JSON).build();
+	}
+	
+	@GET
 	@Path("/path/go/{acc1}/{acc2}")
 	public Response getCommonGOPath(@PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @Context GraphDatabaseService db) throws IOException {
 		
@@ -713,10 +764,8 @@ public class ParentDistance {
 		return rootGOacc;
 	}
 	
-	private Integer shortestDistance( Node source, Node target, Integer depth, String type ) {
+	private Integer shortestDistance( Node source, Node target, Integer depth, String type, String direction ) {
 		
-		Integer maxdistance = 100;
-
 		PathFinder<org.neo4j.graphdb.Path> finder;
 		
 		if ( type.equals("go") ) {
@@ -724,17 +773,24 @@ public class ParentDistance {
 			// The relationships we will follow
 			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
 			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
-					
-			PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.OUTGOING, partof, Direction.OUTGOING ), maxdistance );
-
+			
+			if ( direction.equals( "direction" ) {	
+				PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.OUTGOING, partof, Direction.OUTGOING ), depth );
+			} else {
+				PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypes( isa, partof ), depth );
+			}
 		
 		} else {
 		
 			// The relationships we will follow
 			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
-		
-			PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypeAndDirection( parent, Direction.OUTGOING ), maxdistance );
 
+			if ( direction.equals( "direction" ) {	
+				PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypeAndDirection( parent, Direction.OUTGOING ), depth );
+			} else {
+				PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forType( parent ), depth );
+
+			}
 		}
 
 		
@@ -744,13 +800,13 @@ public class ParentDistance {
 		
 		while ( itr.hasNext() ) {
 			
-			Integer taxlength = itr.next().length();
-			if ( taxlength < maxdistance ) {
-				maxdistance = taxlength;
+			Integer hoplength = itr.next().length();
+			if ( hoplength < depth ) {
+				depth = hoplength;
 			}
 		}
 		
-		return maxdistance;
+		return depth;
 	}
 	
 	private ArrayList<Long> shortestPathNodes( Node source, Node target, Integer depth, Object... relations ) {
