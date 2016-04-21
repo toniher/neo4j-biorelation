@@ -510,20 +510,17 @@ public class ParentDistance {
 	public Response getRelations(@PathParam("type") String type, @PathParam("acc") String list, @Context GraphDatabaseService db) throws IOException {
 
 
-		Label nodelabel = DynamicLabel.label( "MOL" );
-		String nodeproperty = "synonyms"; // Array synonyms
+		String nodelabel = "MOL";
+		String nodeproperty = "id"; // Array synonyms
 
 		Label label;
-		String property;
 		String relproperty;
 
 		if ( type.equals( "go" ) ) {
-			label = DynamicLabel.label( "GO_TERM" );
-			property = "acc";
+			label = "GO_TERM";
 			relproperty = "has_go";
 		} else {
-			label = DynamicLabel.label( "TAXID" );
-			property = "id";
+			label = "TAXID";
 			relproperty = "has_taxon";
 		}
 
@@ -531,21 +528,22 @@ public class ParentDistance {
 
 		ArrayList<Node> listNodes = new ArrayList<Node>();
 
+		// Prepare string of values
+		String strValues;
+		
 		for (int i = 0; i < arrayAcc.length; i++) {
-			ResourceIterator<Node> resultNodes = db.findNodes( nodelabel, nodeproperty, arrayAcc[i] );
-
-			while(resultNodes.hasNext()){
-				
-				Node rNode = resultNodes.next();
-				listNodes.add( rNode );
-			}
-
+			arrayAcc[i] = "\"" + arrayAcc[i] + "\"";
 		}
+		
+		strValues = "["  + join( ",", arrayAcc ) +  "]";
+
+		listNodes = getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty );
 
 		// For all listNodes
 		// Get relationships, return according above
+		JsonArray jsonArray = arrayListNodes2JSON( listNodes, db );
+		String outputStr = jsonArray.toString();
 		
-		String outputStr = "KK";
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
 
 	}
@@ -571,6 +569,30 @@ public class ParentDistance {
 		}
 	
 		return leafNodes;
+	
+	}
+
+	private ArrayList<Node> getAllLinkedNodes( String baselabel, String label, String property, String value, String relation, GraphDatabaseService db ) {
+	
+	
+		String query = "MATCH (n:"+baselabel+")-["+relation+"]->(m:"+label+") where n."+property+" in "+value+" return distinct m;";
+	
+		ArrayList<Node> linkedNodes = new ArrayList<Node>();
+
+		try ( Transaction tx = db.beginTx();
+			Result result = db.execute( query )
+
+		){
+			Iterator<Node> node_column = result.columnAs( "m" );
+			for ( Node node : IteratorUtil.asIterable( node_column ) ) {
+				linkedNodes.add( node );
+			}
+	
+			tx.success();
+		
+		}
+	
+		return linkedNodes;
 	
 	}
 	
