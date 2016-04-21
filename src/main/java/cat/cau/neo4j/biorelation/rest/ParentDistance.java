@@ -775,9 +775,9 @@ public class ParentDistance {
 			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
 			
 			if ( direction.equals( "direction" ) ) {	
-				PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.OUTGOING, partof, Direction.OUTGOING ), depth );
+				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.OUTGOING, partof, Direction.OUTGOING ), depth );
 			} else {
-				PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypes( isa, partof ), depth );
+				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypes( isa, partof ), depth );
 			}
 		
 		} else {
@@ -786,9 +786,9 @@ public class ParentDistance {
 			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
 
 			if ( direction.equals( "direction" ) ) {	
-				PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypeAndDirection( parent, Direction.OUTGOING ), depth );
+				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypeAndDirection( parent, Direction.OUTGOING ), depth );
 			} else {
-				PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forType( parent ), depth );
+				finder = GraphAlgoFactory.shortestPath( PathExpanders.forType( parent ), depth );
 
 			}
 		}
