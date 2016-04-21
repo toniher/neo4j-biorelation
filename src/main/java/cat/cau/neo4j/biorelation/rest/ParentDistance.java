@@ -513,7 +513,7 @@ public class ParentDistance {
 		String nodelabel = "MOL";
 		String nodeproperty = "id"; // Array synonyms
 
-		Label label;
+		String label;
 		String relproperty;
 
 		if ( type.equals( "go" ) ) {
@@ -535,9 +535,9 @@ public class ParentDistance {
 			arrayAcc[i] = "\"" + arrayAcc[i] + "\"";
 		}
 		
-		strValues = "["  + join( ",", arrayAcc ) +  "]";
+		strValues = "["  + StringUtils.join( arrayAcc, "," ) +  "]";
 
-		listNodes = getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty );
+		listNodes = getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, db );
 
 		// For all listNodes
 		// Get relationships, return according above
