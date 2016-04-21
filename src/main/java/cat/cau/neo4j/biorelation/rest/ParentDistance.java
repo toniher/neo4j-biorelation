@@ -777,7 +777,7 @@ public class ParentDistance {
 			if ( direction.equals( "direction" ) ) {	
 				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.OUTGOING, partof, Direction.OUTGOING ), depth );
 			} else {
-				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypes( isa, partof ), depth );
+				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.BOTH, partof, Direction.BOTH ), depth );
 			}
 		
 		} else {
