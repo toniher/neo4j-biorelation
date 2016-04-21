@@ -182,25 +182,14 @@ public class ParentDistance {
 		try (Transaction tx = db.beginTx()) {
 			
 			Node node1 = db.findNode( label, property, acc1 );
-	
-			// The relationships we will follow
-			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
-			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
-			
-			Object[] relations = new Object[4];
-			
-			relations[0] = isa;
-			relations[1] = Direction.OUTGOING;
-			relations[2] = partof;
-			relations[3] = Direction.OUTGOING;
 			
 			if ( acc2.equals("root") ) {
 				String baseGO = getBaseGO( node1 );
 				Node node2 = db.findNode( label, property, baseGO );
-				pathNodes = shortestPathNodes( node1, node2, 100, relations );			
+				pathNodes = shortestPathNodes( node1, node2, 100, "go", "nodirection" );			
 			} else {
 				Node node2 = db.findNode( label, property, acc2 );
-				pathNodes = shortestPathNodes( node1, node2, 100, relations );
+				pathNodes = shortestPathNodes( node1, node2, 100, "go", "nodirection" );
 			}
 			
 			tx.success();
@@ -264,17 +253,6 @@ public class ParentDistance {
 	
 			}
 	
-			// The relationships we will follow
-			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
-			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
-			
-			Object[] relations = new Object[4];
-			
-			relations[0] = isa;
-			relations[1] = Direction.OUTGOING;
-			relations[2] = partof;
-			relations[3] = Direction.OUTGOING;
-	
 			if ( allElementsTheSame( propsNodes ) ) {
 	
 				// We get GO of root
@@ -284,7 +262,7 @@ public class ParentDistance {
 				Node baseNode = db.findNode( label, property, rootGOacc );
 	
 				for (int i = 0; i < arrayNodes.length; i++) {
-					pathNodes.add( shortestPathNodes( arrayNodes[i], baseNode, 100, relations ) );
+					pathNodes.add( shortestPathNodes( arrayNodes[i], baseNode, 100, "go", "nodirection" ) );
 				}
 	
 				//// First we assing the pathResult
@@ -372,15 +350,7 @@ public class ParentDistance {
 			
 			tx.success();
 			
-			// The relationships we will follow
-			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
-			
-			Object[] relations = new Object[2];
-			
-			relations[0] = parent;
-			relations[1] = Direction.OUTGOING;
-			
-			pathNodes = shortestPathNodes( node1, node2, 100, relations );
+			pathNodes = shortestPathNodes( node1, node2, 100, "tax", "nodirection" );
 			
 		}
 		
@@ -429,17 +399,9 @@ public class ParentDistance {
 			
 			Node baseNode = db.findNode( label, property, 1 );
 	
-			// The relationships we will follow
-			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
-			
-			Object[] relations = new Object[2];
-			
-			relations[0] = parent;
-			relations[1] = Direction.OUTGOING;
-	
 			for (int i = 0; i < arrayIDs.length; i++) {
 				Node nodeID = db.findNode( label, property, Integer.parseInt( arrayIDs[i] ) );
-				pathNodes.add( shortestPathNodes( nodeID, baseNode, 100, relations ) );
+				pathNodes.add( shortestPathNodes( nodeID, baseNode, 100, "tax", "nodirection" ) );
 			}
 			tx.success();
 			
@@ -798,14 +760,36 @@ public class ParentDistance {
 		return depth;
 	}
 	
-	private ArrayList<Long> shortestPathNodes( Node source, Node target, Integer depth, Object... relations ) {
+	private ArrayList<Long> shortestPathNodes( Node source, Node target, Integer depth, String type, String direction ) {
 		
-		Integer maxdistance = 100;
 		ArrayList<Long> pathNodes = new ArrayList<Long>();
+
+		PathFinder<org.neo4j.graphdb.Path> finder;
 		
-		// Temporary: Any type and direction
-		PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.allTypesAndDirections(), depth );
-		//PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( relations ), depth );
+		if ( type.equals("go") ) {
+		
+			// The relationships we will follow
+			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
+			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
+			
+			if ( direction.equals( "direction" ) ) {	
+				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.OUTGOING, partof, Direction.OUTGOING ), depth );
+			} else {
+				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.BOTH, partof, Direction.BOTH ), depth );
+			}
+		
+		} else {
+		
+			// The relationships we will follow
+			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
+
+			if ( direction.equals( "direction" ) ) {	
+				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypeAndDirection( parent, Direction.OUTGOING ), depth );
+			} else {
+				finder = GraphAlgoFactory.shortestPath( PathExpanders.forType( parent ), depth );
+
+			}
+		}
 		
 		Iterable<org.neo4j.graphdb.Path> ListPaths = finder.findAllPaths( source, target );
 		
@@ -814,9 +798,9 @@ public class ParentDistance {
 		while ( itr.hasNext() ) {
 			
 			org.neo4j.graphdb.Path nodePath = itr.next();
-			Integer taxlength = nodePath.length();
-			if ( taxlength < maxdistance ) {
-				maxdistance = taxlength;
+			Integer hoplength = nodePath.length();
+			if ( hoplength < depth ) {
+				depth = hoplength;
 				pathNodes.clear(); // Clear arrayList
 				Iterable<Node> ListNodes = nodePath.nodes();
 				
