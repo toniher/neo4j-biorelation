@@ -6,7 +6,7 @@
 
     <groupId>cat.cau.neo4j</groupId>
     <artifactId>neo4j-biorelation</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
 
     <properties>
         <neo4j.version>2.3.3</neo4j.version>

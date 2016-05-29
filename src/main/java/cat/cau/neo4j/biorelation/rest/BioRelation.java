@@ -6,24 +6,10 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.DynamicLabel;
 
-import org.neo4j.graphdb.Result;
-import org.neo4j.graphdb.ResourceIterator;
-
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.DynamicRelationshipType;
 
-import org.neo4j.graphdb.PathExpanders;
-
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.Direction;
-
-import org.neo4j.graphalgo.GraphAlgoFactory;
-import org.neo4j.graphalgo.PathFinder;
-import org.neo4j.graphdb.Expander;
-
-
-import org.neo4j.helpers.collection.IteratorUtil;
-
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonArray;
@@ -38,29 +24,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Iterator;
 import java.util.Hashtable;
-import java.util.Map;
 
-//ANCESTOR TAX -> 1
-//
-
-
-@Path("/parent")
-public class ParentDistance {
-
-	//ANCESTOR GO
-	private Hashtable<String, String> getrootGO() {
-
-		Hashtable<String, String> rootGO = new Hashtable<String, String>();
-		rootGO.put("biological_process", "GO:0008150");
-		rootGO.put("cellular_component", "GO:0005575");
-		rootGO.put("molecular_function", "GO:0003674");
-		
-		return (rootGO);
-	}
+@Path("/")
+public class BioRelation {
 
 	@GET
 	@Path("/helloworld")
@@ -77,6 +44,8 @@ public class ParentDistance {
 		Label label;
 		String property;
 		String proptype = "string";
+
+		BioRelationFunction func = new BioRelationFunction();
 
 		Object[] relations;
 
@@ -109,7 +78,7 @@ public class ParentDistance {
 
 			tx.success();
 				
-			maxdistance = shortestDistance( node1, node2, maxdistance, type, "nodirection" );
+			maxdistance = func.shortestDistance( node1, node2, maxdistance, type, "nodirection" );
 			
 		}
 	
@@ -128,6 +97,8 @@ public class ParentDistance {
 		Label label;
 		String property;
 		String proptype = "string";
+		
+		BioRelationFunction func = new BioRelationFunction();
 
 		Object[] relations;
 
@@ -160,7 +131,7 @@ public class ParentDistance {
 
 			tx.success();
 				
-			maxdistance = shortestDistance( node1, node2, maxdistance, type, "direction" );
+			maxdistance = func.shortestDistance( node1, node2, maxdistance, type, "direction" );
 			
 		}
 	
@@ -179,17 +150,19 @@ public class ParentDistance {
 		Label label = DynamicLabel.label( "GO_TERM" );
 		String property = "acc";
 		
+		BioRelationFunction func = new BioRelationFunction();
+		
 		try (Transaction tx = db.beginTx()) {
 			
 			Node node1 = db.findNode( label, property, acc1 );
 			
 			if ( acc2.equals("root") ) {
-				String baseGO = getBaseGO( node1 );
+				String baseGO = func.getBaseGO( node1 );
 				Node node2 = db.findNode( label, property, baseGO );
-				pathNodes = shortestPathNodes( node1, node2, 100, "go", "nodirection" );			
+				pathNodes = func.shortestPathNodes( node1, node2, 100, "go", "nodirection" );			
 			} else {
 				Node node2 = db.findNode( label, property, acc2 );
-				pathNodes = shortestPathNodes( node1, node2, 100, "go", "nodirection" );
+				pathNodes = func.shortestPathNodes( node1, node2, 100, "go", "nodirection" );
 			}
 			
 			tx.success();
@@ -237,6 +210,9 @@ public class ParentDistance {
 		// array we store the resulting path
 		ArrayList<Long> pathResult = new ArrayList<Long>();
 	
+		BioRelationHelper helper = new BioRelationHelper();
+		BioRelationFunction func = new BioRelationFunction();
+	
 		String[] arrayIDs = list.split("-",-1); 
 	
 		try (Transaction tx = db.beginTx()) {
@@ -253,16 +229,16 @@ public class ParentDistance {
 	
 			}
 	
-			if ( allElementsTheSame( propsNodes ) ) {
+			if ( helper.allElementsTheSame( propsNodes ) ) {
 	
 				// We get GO of root
-				Hashtable<String, String> rootGO = getrootGO();
+				Hashtable<String, String> rootGO = func.getRootGO();
 				String rootGOacc = rootGO.get( propsNodes[0] );
 	
 				Node baseNode = db.findNode( label, property, rootGOacc );
 	
 				for (int i = 0; i < arrayNodes.length; i++) {
-					pathNodes.add( shortestPathNodes( arrayNodes[i], baseNode, 100, "go", "nodirection" ) );
+					pathNodes.add( func.shortestPathNodes( arrayNodes[i], baseNode, 100, "go", "nodirection" ) );
 				}
 	
 				//// First we assing the pathResult
@@ -340,6 +316,8 @@ public class ParentDistance {
 		Label label = DynamicLabel.label( "TAXID" );
 		String property = "id";
 	
+		BioRelationFunction func = new BioRelationFunction();
+
 		ArrayList<Long> pathNodes = new ArrayList<Long>();
 	
 		try (Transaction tx = db.beginTx()) {
@@ -350,7 +328,7 @@ public class ParentDistance {
 			
 			tx.success();
 			
-			pathNodes = shortestPathNodes( node1, node2, 100, "tax", "nodirection" );
+			pathNodes = func.shortestPathNodes( node1, node2, 100, "tax", "nodirection" );
 			
 		}
 		
@@ -393,7 +371,9 @@ public class ParentDistance {
 		// array we store the resulting path
 		ArrayList<Long> pathResult = new ArrayList<Long>();
 	
-		String[] arrayIDs = list.split("-",-1); 
+		String[] arrayIDs = list.split("-",-1);
+		
+		BioRelationFunction func = new BioRelationFunction();
 	
 		try (Transaction tx = db.beginTx()) {
 			
@@ -401,7 +381,7 @@ public class ParentDistance {
 	
 			for (int i = 0; i < arrayIDs.length; i++) {
 				Node nodeID = db.findNode( label, property, Integer.parseInt( arrayIDs[i] ) );
-				pathNodes.add( shortestPathNodes( nodeID, baseNode, 100, "tax", "nodirection" ) );
+				pathNodes.add( func.shortestPathNodes( nodeID, baseNode, 100, "tax", "nodirection" ) );
 			}
 			tx.success();
 			
@@ -468,9 +448,12 @@ public class ParentDistance {
 	
 		String labelStr = "GO_TERM";
 		String property = "acc";
+		
+		BioRelationHelper helper = new BioRelationHelper();
+		BioRelationFunction func = new BioRelationFunction();
 
-		ArrayList<Node> leafNodes = getAllLeafNodes( labelStr, property, value, db );
-		JsonArray jsonArray = arrayListNodes2JSON( leafNodes, db );
+		ArrayList<Node> leafNodes = func.getAllLeafNodes( labelStr, property, value, db );
+		JsonArray jsonArray = helper.arrayListNodes2JSON( leafNodes, db );
 		
 		String outputStr = jsonArray.toString();
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
@@ -483,7 +466,10 @@ public class ParentDistance {
 		String labelStr = "GO_TERM";
 		String property = "acc";
 		
-		ArrayList<Node> leafNodes = getAllLeafNodes( labelStr, property, value, db );
+		BioRelationHelper helper = new BioRelationHelper(); 
+		BioRelationFunction func = new BioRelationFunction();
+		
+		ArrayList<Node> leafNodes = func.getAllLeafNodes( labelStr, property, value, db );
 
 		Label label = DynamicLabel.label( labelStr );
 		Node queryNode;
@@ -493,9 +479,9 @@ public class ParentDistance {
 			
 			queryNode = db.findNode( label, property, value );
 				
-			ArrayList<Integer> distanceNodes = calcDistanceNodes( leafNodes, queryNode, "go" );
+			ArrayList<Integer> distanceNodes = func.calcDistanceNodes( leafNodes, queryNode, "go" );
 	
-			jsonArray = arrayListNodes2JSONextraInt( leafNodes, distanceNodes, "distance", db );
+			jsonArray = helper.arrayListNodes2JSONextraInt( leafNodes, distanceNodes, "distance", db );
 	
 			tx.success();
 	
@@ -524,7 +510,10 @@ public class ParentDistance {
 			relproperty = "has_taxon";
 		}
 
-		String[] arrayAcc = list.split("-",-1); 
+		String[] arrayAcc = list.split("-",-1);
+		
+		BioRelationHelper helper = new BioRelationHelper(); 
+		BioRelationFunction func = new BioRelationFunction();
 
 		ArrayList<Node> listNodes = new ArrayList<Node>();
 
@@ -537,313 +526,15 @@ public class ParentDistance {
 		
 		strValues = "["  + StringUtils.join( arrayAcc, "," ) +  "]";
 
-		listNodes = getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, db );
+		listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, db );
 
 		// For all listNodes
 		// Get relationships, return according above
-		JsonArray jsonArray = arrayListNodes2JSON( listNodes, db );
+		JsonArray jsonArray = helper.arrayListNodes2JSON( listNodes, db );
 		String outputStr = jsonArray.toString();
 		
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
 
-	}
-	
-	private ArrayList<Node> getAllLeafNodes( String label, String property, String value, GraphDatabaseService db ) {
-	
-	
-		String query = "MATCH (n:"+label+" { "+property+":'"+value+"' })<-[r*]-(m:"+label+") where not(()-->m) return distinct m;";
-	
-		ArrayList<Node> leafNodes = new ArrayList<Node>();
-
-		try ( Transaction tx = db.beginTx();
-			Result result = db.execute( query )
-
-		){
-			Iterator<Node> node_column = result.columnAs( "m" );
-			for ( Node node : IteratorUtil.asIterable( node_column ) ) {
-				leafNodes.add( node );
-			}
-	
-			tx.success();
-		
-		}
-	
-		return leafNodes;
-	
-	}
-
-	private ArrayList<Node> getAllLinkedNodes( String baselabel, String label, String property, String value, String relation, GraphDatabaseService db ) {
-	
-	
-		String query = "MATCH (n:"+baselabel+")-["+relation+"]->(m:"+label+") where n."+property+" in "+value+" return distinct m;";
-	
-		ArrayList<Node> linkedNodes = new ArrayList<Node>();
-
-		try ( Transaction tx = db.beginTx();
-			Result result = db.execute( query )
-
-		){
-			Iterator<Node> node_column = result.columnAs( "m" );
-			for ( Node node : IteratorUtil.asIterable( node_column ) ) {
-				linkedNodes.add( node );
-			}
-	
-			tx.success();
-		
-		}
-	
-		return linkedNodes;
-	
-	}
-	
-	private ArrayList<Integer> calcDistanceNodes( ArrayList<Node> arrayNodes, Node queryNode, String type ) {
-	
-		ArrayList<Integer> distances = new ArrayList<Integer>();
-		
-		Iterator<Node> nodeIterator = arrayNodes.iterator();
-		while(nodeIterator.hasNext()){
-			
-			Node lNode = nodeIterator.next();
-			
-			Integer distance = shortestDistance( queryNode, lNode, 100, type, "nodirection" );
-			distances.add( distance );
-		}
-		
-		return distances;
-	}
-	
-	private JsonArray arrayListNodes2JSON( ArrayList<Node> arrayNodes, GraphDatabaseService db ) {
-		
-		JsonArray jsonArray = new JsonArray();
-		
-		Iterator<Node> nodeIterator = arrayNodes.iterator();
-		while(nodeIterator.hasNext()){
-			
-			Node lNode = nodeIterator.next();
-
-			JsonObject jsonObject = new JsonObject();
-
-			try (Transaction tx = db.beginTx()) {
-
-				Iterable<String> lNodeProps = lNode.getPropertyKeys();
-				Iterator<String> itrProp = lNodeProps.iterator();
-				while ( itrProp.hasNext() ) {
-
-						String prop = itrProp.next();
-						String value = lNode.getProperty( prop ).toString();
-						
-						if ( StringUtils.isNumeric( value ) ) {
-							int valueInt = Integer.parseInt( value );
-							double valueFloat = Float.parseFloat( value );
-							
-							if ( valueInt == valueFloat ) {
-								jsonObject.add( prop, valueInt );
-							} else {
-								jsonObject.add( prop, valueFloat );
-							}
-						} else {
-						
-							jsonObject.add( prop, value );
-						}
-				}
-
-				tx.success();
-			}
-
-			jsonArray.add( jsonObject );
-
-		}
-		
-		return jsonArray;
-	}
-
-	private JsonArray arrayListNodes2JSONextraInt( ArrayList<Node> arrayNodes, ArrayList<Integer> arrayInteger, String extra, GraphDatabaseService db ) {
-		
-		JsonArray jsonArray = new JsonArray();
-		
-		Integer intIter = 0;
-		
-		Iterator<Node> nodeIterator = arrayNodes.iterator();
-		while(nodeIterator.hasNext()){
-			
-			Node lNode = nodeIterator.next();
-
-			JsonObject jsonObject = new JsonObject();
-
-			try (Transaction tx = db.beginTx()) {
-
-				Iterable<String> lNodeProps = lNode.getPropertyKeys();
-				Iterator<String> itrProp = lNodeProps.iterator();
-				while ( itrProp.hasNext() ) {
-
-						String prop = itrProp.next();
-						String value = lNode.getProperty( prop ).toString();
-						
-						if ( StringUtils.isNumeric( value ) ) {
-							int valueInt = Integer.parseInt( value );
-							double valueFloat = Float.parseFloat( value );
-							
-							if ( valueInt == valueFloat ) {
-								jsonObject.add( prop, valueInt );
-							} else {
-								jsonObject.add( prop, valueFloat );
-							}
-						} else {
-						
-							jsonObject.add( prop, value );
-						}
-						
-						// Adding extra arrayvalue
-						jsonObject.add( extra, arrayInteger.get( intIter ) );
-						
-				}
-
-				tx.success();
-			}
-
-			jsonArray.add( jsonObject );
-			intIter++;
-
-		}
-		
-		return jsonArray;
-	}
-	
-	private static boolean allElementsTheSame(String[] array) {
-		
-		if (array.length == 0) {
-			return true;
-		} else {
-			String first = array[0];
-			for (String element : array) {
-				if (!element.equals(first)) {
-					return false;
-				}
-			}
-			
-		return true;
-	
-		}
-	}
-
-	private String getBaseGO( Node refNode ) {
-	
-		String property = refNode.getProperty("term_type").toString();
-	
-		// We get GO of root
-		Hashtable<String, String> rootGO = getrootGO();
-		String rootGOacc = rootGO.get( property );
-		
-		return rootGOacc;
-	}
-	
-	private Integer shortestDistance( Node source, Node target, Integer depth, String type, String direction ) {
-		
-		PathFinder<org.neo4j.graphdb.Path> finder;
-		
-		if ( type.equals("go") ) {
-		
-			// The relationships we will follow
-			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
-			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
-			
-			if ( direction.equals( "direction" ) ) {	
-				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.OUTGOING, partof, Direction.OUTGOING ), depth );
-			} else {
-				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.BOTH, partof, Direction.BOTH ), depth );
-			}
-		
-		} else {
-		
-			// The relationships we will follow
-			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
-
-			if ( direction.equals( "direction" ) ) {	
-				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypeAndDirection( parent, Direction.OUTGOING ), depth );
-			} else {
-				finder = GraphAlgoFactory.shortestPath( PathExpanders.forType( parent ), depth );
-
-			}
-		}
-
-		
-		Iterable<org.neo4j.graphdb.Path> ListPaths = finder.findAllPaths( source, target );
-		
-		Iterator<org.neo4j.graphdb.Path> itr = ListPaths.iterator();
-		
-		while ( itr.hasNext() ) {
-			
-			Integer hoplength = itr.next().length();
-			if ( hoplength < depth ) {
-				depth = hoplength;
-			}
-		}
-		
-		return depth;
-	}
-	
-	private ArrayList<Long> shortestPathNodes( Node source, Node target, Integer depth, String type, String direction ) {
-		
-		ArrayList<Long> pathNodes = new ArrayList<Long>();
-
-		PathFinder<org.neo4j.graphdb.Path> finder;
-		
-		if ( type.equals("go") ) {
-		
-			// The relationships we will follow
-			RelationshipType isa = DynamicRelationshipType.withName( "is_a" );
-			RelationshipType partof = DynamicRelationshipType.withName( "part_of" );
-			
-			if ( direction.equals( "direction" ) ) {	
-				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.OUTGOING, partof, Direction.OUTGOING ), depth );
-			} else {
-				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypesAndDirections( isa, Direction.BOTH, partof, Direction.BOTH ), depth );
-			}
-		
-		} else {
-		
-			// The relationships we will follow
-			RelationshipType parent = DynamicRelationshipType.withName( "has_parent" );
-
-			if ( direction.equals( "direction" ) ) {	
-				finder = GraphAlgoFactory.shortestPath( PathExpanders.forTypeAndDirection( parent, Direction.OUTGOING ), depth );
-			} else {
-				finder = GraphAlgoFactory.shortestPath( PathExpanders.forType( parent ), depth );
-
-			}
-		}
-		
-		Iterable<org.neo4j.graphdb.Path> ListPaths = finder.findAllPaths( source, target );
-		
-		Iterator<org.neo4j.graphdb.Path> itr = ListPaths.iterator();
-		
-		while ( itr.hasNext() ) {
-			
-			org.neo4j.graphdb.Path nodePath = itr.next();
-			Integer hoplength = nodePath.length();
-			if ( hoplength < depth ) {
-				depth = hoplength;
-				pathNodes.clear(); // Clear arrayList
-				Iterable<Node> ListNodes = nodePath.nodes();
-				
-				pathNodes = nodes2Array( ListNodes ); 
-			}
-		}
-		
-		return pathNodes;
-	}
-	
-	private ArrayList<Long> nodes2Array( Iterable<Node> ListNodes ) {
-		
-		ArrayList<Long> pathNodes = new ArrayList<Long>();
-		
-		Iterator<Node> itr = ListNodes.iterator();
-		while ( itr.hasNext() ) {
-			
-			pathNodes.add( itr.next().getId() ); 
-		}
-		
-		return pathNodes;
 	}
 
 }

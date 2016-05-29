@@ -13,7 +13,7 @@ You would need to import NCBI taxonomy and Gene Ontology into your Neo4j Databas
 
     mvn clean package
 
-2. Copy target/neo4j-biorelation-0.1.jar to the plugins/ directory of your Neo4j server.
+2. Copy target/neo4j-biorelation-0.2.jar to the plugins/ directory of your Neo4j server.
 
 3. Configure Neo4j by adding a line to conf/neo4j-server.properties:
 
@@ -27,13 +27,13 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
 
 5. Query it over HTTP:
 
-    * curl http://localhost:7474/biodb/parent/helloworld -> Dummy
-    * curl http://localhost:7474/biodb/parent/distance/tax/9606/10114 -> Distance (hops) between human and guinea pig
-    * curl http://localhost:7474/biodb/parent/path/tax/9606/10114 -> Path between human and guinea pig
-    * curl http://localhost:7474/biodb/parent/common/tax/9606-10114 -> LCA between human and guinea pig. Many values allowed
-    * curl http://localhost:7474/biodb/parent/distance/go/GO:0004180/GO:0004866 -> Distance (hops) between carboxypeptidase and endopeptidase GOs
-    * curl http://localhost:7474/biodb/parent/path/go/GO:0004180/GO:0004866 -> Path between carboxypeptidase and endopeptidase GOs
-    * curl http://localhost:7474/biodb/parent/common/go/GO:0004180-GO:0004866 LCA between carboxypeptidase and endopeptidase GOs
+    * curl http://localhost:7474/biodb/helloworld -> Dummy
+    * curl http://localhost:7474/biodb/distance/tax/9606/10114 -> Distance (hops) between human and guinea pig
+    * curl http://localhost:7474/biodb/path/tax/9606/10114 -> Path between human and guinea pig
+    * curl http://localhost:7474/biodb/common/tax/9606-10114 -> LCA between human and guinea pig. Many values allowed
+    * curl http://localhost:7474/biodb/distance/go/GO:0004180/GO:0004866 -> Distance (hops) between carboxypeptidase and endopeptidase GOs
+    * curl http://localhost:7474/biodb/path/go/GO:0004180/GO:0004866 -> Path between carboxypeptidase and endopeptidase GOs
+    * curl http://localhost:7474/biodb/common/go/GO:0004180-GO:0004866 LCA between carboxypeptidase and endopeptidase GOs
 
 
 ## TODO
@@ -47,8 +47,8 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
     where not(()-->m)
     return distinct m;
 
-* curl http://localhost:7474/biodb/parent/rels/go/MOLID -> GO information about this MOLID
-* curl http://localhost:7474/biodb/parent/rels/tax/MOLID -> Taxon information about this MOLID
+* curl http://localhost:7474/biodb/rels/go/MOLID -> GO information about this MOLID
+* curl http://localhost:7474/biodb/rels/tax/MOLID -> Taxon information about this MOLID
 
 
 * Make tests work.
