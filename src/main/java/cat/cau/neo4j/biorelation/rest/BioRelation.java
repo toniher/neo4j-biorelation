@@ -36,10 +36,18 @@ public class BioRelation {
 	}
 
 	@GET
-	@Path("/distance/{type}/{acc1}/{acc2}")
-	public Response getCommonTaxDistance(@PathParam("type") String type, @PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @Context GraphDatabaseService db) throws IOException {
+	@Path("/distance/{type}/{acc1}/{acc2}{dirout: (/[^/]+?)?}")
+	public Response getCommonTaxDistance(@PathParam("type") String type, @PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @PathParam("dirout") String dirout, @Context GraphDatabaseService db) throws IOException {
 		
 		Integer maxdistance = 100;
+
+		String direction;
+		
+		if ( dirout.equals("/direction") ) {
+			direction = "direction";
+		} else {
+			direction = "nodirection";
+		}
 
 		Label label;
 		String property;
@@ -78,64 +86,11 @@ public class BioRelation {
 
 			tx.success();
 				
-			maxdistance = func.shortestDistance( node1, node2, maxdistance, type, "nodirection" );
+			maxdistance = func.shortestDistance( node1, node2, maxdistance, type, direction );
 			
 		}
 	
-		JsonObject jsonObject = new JsonObject().add( "distance", maxdistance );
-		String jsonStr = jsonObject.toString();
-	
-		return Response.ok( jsonStr, MediaType.APPLICATION_JSON).build();
-	}
-
-	@GET
-	@Path("/distancedir/{type}/{acc1}/{acc2}")
-	public Response getCommonTaxDistanceDir(@PathParam("type") String type, @PathParam("acc1") String acc1, @PathParam("acc2") String acc2, @Context GraphDatabaseService db) throws IOException {
-		
-		Integer maxdistance = 100;
-
-		Label label;
-		String property;
-		String proptype = "string";
-		
-		BioRelationFunction func = new BioRelationFunction();
-
-		Object[] relations;
-
-		if ( type.equals( "go" ) ) {
-			label = DynamicLabel.label( "GO_TERM" );
-			property = "acc";
-
-		} else {
-			label = DynamicLabel.label( "TAXID" );
-			property = "id";
-			proptype = "int";
-
-		}
-		
-		try (Transaction tx = db.beginTx()) {
-			
-			Node node1;
-			Node node2;
-
-			if ( proptype.equals( "int" ) ) {
-	
-				node1 = db.findNode( label, property, Integer.parseInt( acc1 ) );
-				node2 = db.findNode( label, property, Integer.parseInt( acc2 ) );
-				
-			} else {
-
-				node1 = db.findNode( label, property, acc1 );
-				node2 = db.findNode( label, property, acc2 );
-			}
-
-			tx.success();
-				
-			maxdistance = func.shortestDistance( node1, node2, maxdistance, type, "direction" );
-			
-		}
-	
-		JsonObject jsonObject = new JsonObject().add( "distance", maxdistance );
+		JsonObject jsonObject = new JsonObject().add( "distance", maxdistance ).add( "type", direction );
 		String jsonStr = jsonObject.toString();
 	
 		return Response.ok( jsonStr, MediaType.APPLICATION_JSON).build();
