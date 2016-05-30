@@ -480,7 +480,7 @@ public class BioRelation {
 		
 		strValues = "["  + StringUtils.join( arrayAcc, "," ) +  "]";
 
-		listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, db );
+		listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, "distinct", db );
 
 		// For all listNodes
 		// Get relationships, return according above
@@ -526,7 +526,7 @@ public class BioRelation {
 		
 		strValues = "["  + StringUtils.join( arrayAcc, "," ) +  "]";
 
-		listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, db );
+		listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, "", db );
 
 		if ( type.equals( "go" ) ) {
 			// Iterate by term_type

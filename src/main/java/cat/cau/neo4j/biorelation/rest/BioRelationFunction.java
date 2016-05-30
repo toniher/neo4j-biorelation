@@ -70,10 +70,10 @@ public class BioRelationFunction {
 	
 	}
 
-	public ArrayList<Node> getAllLinkedNodes( String baselabel, String label, String property, String value, String relation, GraphDatabaseService db ) {
+	public ArrayList<Node> getAllLinkedNodes( String baselabel, String label, String property, String value, String relation, String distinct, GraphDatabaseService db ) {
 	
-		// TODO: Allow play here with frequency -> distinct
-		String query = "MATCH (n:"+baselabel+")-["+relation+"]->(m:"+label+") where n."+property+" in "+value+" return distinct m;";
+		// Query, we control if distinct through string
+		String query = "MATCH (n:"+baselabel+")-["+relation+"]->(m:"+label+") where n."+property+" in "+value+" return "+distinct+" m;";
 	
 		ArrayList<Node> linkedNodes = new ArrayList<Node>();
 
