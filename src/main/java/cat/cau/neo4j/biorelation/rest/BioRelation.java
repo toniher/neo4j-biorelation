@@ -447,9 +447,8 @@ public class BioRelation {
 	}
 
 	@GET
-	@Path("/rels/{type}/{acc}")
-	public Response getRelations(@PathParam("type") String type, @PathParam("acc") String list, @Context GraphDatabaseService db) throws IOException {
-
+	@Path("/rels/{type}/{list}")
+	public Response getRelations(@PathParam("type") String type, @PathParam("list") String list, @Context GraphDatabaseService db) throws IOException {
 
 		String nodelabel = "MOL";
 		String nodeproperty = "id"; // Array synonyms
@@ -487,6 +486,59 @@ public class BioRelation {
 		// Get relationships, return according above
 		JsonArray jsonArray = helper.arrayListNodes2JSON( listNodes, db );
 		String outputStr = jsonArray.toString();
+		
+		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
+
+	}
+
+	@GET
+	@Path("/rels/common/{type}/{list}")
+	public Response getCommonRelations(@PathParam("type") String type, @PathParam("list") String list, @Context GraphDatabaseService db) throws IOException {
+
+		String nodelabel = "MOL";
+		String nodeproperty = "id"; // Array synonyms
+
+		String label;
+		String relproperty;
+
+		if ( type.equals( "go" ) ) {
+			label = "GO_TERM";
+			relproperty = "has_go";
+		} else {
+			label = "TAXID";
+			relproperty = "has_taxon";
+		}
+
+		String[] arrayAcc = list.split("-",-1);
+		
+		BioRelationHelper helper = new BioRelationHelper(); 
+		BioRelationFunction func = new BioRelationFunction();
+
+		ArrayList<Node> listNodes = new ArrayList<Node>();
+		Hashtable<String, ArrayList<Node>> commonNodes = new Hashtable<String, ArrayList<Node>>();
+
+		// Prepare string of values
+		String strValues;
+		
+		for (int i = 0; i < arrayAcc.length; i++) {
+			arrayAcc[i] = "\"" + arrayAcc[i] + "\"";
+		}
+		
+		strValues = "["  + StringUtils.join( arrayAcc, "," ) +  "]";
+
+		listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, db );
+
+		if ( type.equals( "go" ) ) {
+			// Iterate by term_type
+			commonNodes = func.getCommonNodesSet( listNodes, "term_type", "method", db );
+		} else {
+			commonNodes.put( "tax", listNodes );
+		}
+
+		// For all listNodes
+		// Get relationships, return according above
+		JsonObject jsonResult = helper.hashMapNodes2JSON( commonNodes, db );
+		String outputStr = jsonResult.toString();
 		
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
 

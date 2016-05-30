@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Hashtable;
+import java.util.Set;
 
 public class BioRelationHelper {
 
@@ -117,6 +119,20 @@ public class BioRelationHelper {
 		return jsonArray;
 	}
 
+
+	public JsonObject hashMapNodes2JSON( Hashtable<String, ArrayList<Node>> hashTableNodes, GraphDatabaseService db ) {
+
+		JsonObject jsonObject = new JsonObject();
+
+        Set<String> keys = hashTableNodes.keySet();
+        for(String key: keys){
+			ArrayList<Node> arrayNodes = hashTableNodes.get( key );
+			JsonArray jsonArray = arrayListNodes2JSON( arrayNodes, db );
+			jsonObject.add( key, jsonArray );
+        }
+
+		return jsonObject;
+	}
 
 	public static boolean allElementsTheSame(String[] array) {
 		

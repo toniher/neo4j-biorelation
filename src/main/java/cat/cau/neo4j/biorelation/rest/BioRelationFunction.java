@@ -220,4 +220,33 @@ public class BioRelationFunction {
 		return pathNodes;
 	}
 
+	public Hashtable<String, ArrayList<Node>> getCommonNodesSet( ArrayList<Node> listNodes, String propertyKey, String method, GraphDatabaseService db ) {
+
+		Hashtable<String, ArrayList<Node>> commonNodes = new Hashtable<String, ArrayList<Node>>();
+
+
+		Iterator<Node> nodeIterator = listNodes.iterator();
+		while(nodeIterator.hasNext()){
+			
+			Node lNode = nodeIterator.next();
+
+			try (Transaction tx = db.beginTx()) {
+
+				String propertyValue = lNode.getProperty( propertyKey ).toString();
+				
+				if ( ! commonNodes.containsKey( propertyValue ) ) {
+					ArrayList<Node> listArray = new ArrayList<Node>();
+					commonNodes.put( propertyValue, listArray );
+				}
+				
+				commonNodes.get( propertyValue ).add( lNode );
+				
+				tx.success();
+			}
+
+		}
+
+		return commonNodes;
+	}
+
 }
