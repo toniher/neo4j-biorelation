@@ -220,7 +220,7 @@ public class BioRelationFunction {
 		return pathNodes;
 	}
 
-	public Hashtable<String, ArrayList<Node>> getCommonNodesSet( ArrayList<Node> listNodes, String propertyKey, String method, GraphDatabaseService db ) {
+	public Hashtable<String, ArrayList<Node>> getCommonNodesSet( ArrayList<Node> listNodes, String propertyKey, String method, Integer numberEntries, GraphDatabaseService db ) {
 
 		Hashtable<String, ArrayList<Node>> commonNodes = new Hashtable<String, ArrayList<Node>>();
 
@@ -251,14 +251,16 @@ public class BioRelationFunction {
         for(String key: keys){
 			ArrayList<Node> arrayNodes = commonNodes.get( key );
 
-			commonNodes.put( key, processCommonNodes( arrayNodes, method ) );
+			commonNodes.put( key, processCommonNodes( arrayNodes, method, numberEntries ) );
         }
 		
 		return commonNodes;
 	}
 	
-	public ArrayList<Node> processCommonNodes( ArrayList<Node> arrayNodes, String method ) {
+	public ArrayList<Node> processCommonNodes( ArrayList<Node> arrayNodes, String method, Integer numberEntries ) {
 		
+		ArrayList<Node> newArrayNodes = new ArrayList<Node>();
+				
 		Hashtable<Node, Integer> freqNodes = new Hashtable<Node, Integer>();
 		
 		Iterator<Node> nodeIterator = arrayNodes.iterator();
@@ -267,14 +269,43 @@ public class BioRelationFunction {
 			Node lNode = nodeIterator.next();
 			
 			if ( ! freqNodes.containsKey( lNode ) ) {
-				freqNodes.put( lNode, 0 );
+				freqNodes.put( lNode, 1 );
 			} else {
 				Integer val = freqNodes.get( lNode ) + 1;
 				freqNodes.put( lNode, val );
 			}			
 		}
 		
-		return arrayNodes;
+		switch ( method ) {
+		
+			case "maximum" :
+				Set<Node> keys = freqNodes.keySet();
+				for(Node key: keys){
+					
+					if ( freqNodes.get( key ) >= numberEntries ) {
+						newArrayNodes.add( key );
+					}
+				}
+				
+			case "minimum" :
+				Set<Node> keys = freqNodes.keySet();
+				for(Node key: keys){
+					
+					if ( freqNodes.get( key ) > 1 ) {
+						newArrayNodes.add( key );
+					}
+				}
+			
+			case "all" :
+			    Set<Node> keys = freqNodes.keySet();
+				for(Node key: keys){
+					newArrayNodes.add( key );
+				}
+			
+			default: newArrayNodes = arrayNodes;
+		}
+		
+		return newArrayNodes;
 		
 	}
 
