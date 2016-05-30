@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Hashtable;
-
+import java.util.Set;
 
 public class BioRelationFunction {
 
@@ -224,7 +224,7 @@ public class BioRelationFunction {
 
 		Hashtable<String, ArrayList<Node>> commonNodes = new Hashtable<String, ArrayList<Node>>();
 
-
+		// Handle everything in a Hashtable
 		Iterator<Node> nodeIterator = listNodes.iterator();
 		while(nodeIterator.hasNext()){
 			
@@ -245,8 +245,37 @@ public class BioRelationFunction {
 			}
 
 		}
+		
+		// Process hashtabel according to method
+        Set<String> keys = commonNodes.keySet();
+        for(String key: keys){
+			ArrayList<Node> arrayNodes = commonNodes.get( key );
 
+			commandNodes.put( key, processCommonNodes( arrayNodes, method ) );
+        }
+		
 		return commonNodes;
+	}
+	
+	public ArrayList<Node> processCommonNodes( ArrayList<Node> arrayNodes, String method ) {
+		
+		Hashtable<Node, Integer> freqNodes = new Hashtable<Node, Integer>();
+		
+		Iterator<Node> nodeIterator = arrayNodes.iterator();
+		while(nodeIterator.hasNext()){
+
+			Node lNode = nodeIterator.next();
+			
+			if ( ! freqNodes.containsKey( lNode ) ) {
+				freqNodes.put( lNode, 0 );
+			} else {
+				Integer val = freqNodes.get( lNode ) + 1;
+				freqNodes.put( lNode, val );
+			}			
+		}
+		
+		return arrayNodes;
+		
 	}
 
 }

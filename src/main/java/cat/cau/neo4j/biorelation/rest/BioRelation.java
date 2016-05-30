@@ -530,7 +530,7 @@ public class BioRelation {
 
 		if ( type.equals( "go" ) ) {
 			// Iterate by term_type
-			commonNodes = func.getCommonNodesSet( listNodes, "term_type", "method", db );
+			commonNodes = func.getCommonNodesSet( listNodes, "term_type", "minimum", db );
 		} else {
 			commonNodes.put( "tax", listNodes );
 		}
