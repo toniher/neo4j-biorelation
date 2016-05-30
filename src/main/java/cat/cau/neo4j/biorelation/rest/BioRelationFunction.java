@@ -251,7 +251,7 @@ public class BioRelationFunction {
         for(String key: keys){
 			ArrayList<Node> arrayNodes = commonNodes.get( key );
 
-			commandNodes.put( key, processCommonNodes( arrayNodes, method ) );
+			commonNodes.put( key, processCommonNodes( arrayNodes, method ) );
         }
 		
 		return commonNodes;
