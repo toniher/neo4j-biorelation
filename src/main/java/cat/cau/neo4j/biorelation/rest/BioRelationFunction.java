@@ -276,28 +276,25 @@ public class BioRelationFunction {
 			}			
 		}
 		
+		Set<Node> keys = freqNodes.keySet();
+
 		switch ( method ) {
 		
 			case "maximum" :
-				Set<Node> keys = freqNodes.keySet();
 				for(Node key: keys){
-					
 					if ( freqNodes.get( key ) >= numberEntries ) {
 						newArrayNodes.add( key );
 					}
 				}
 				
 			case "minimum" :
-				Set<Node> keys = freqNodes.keySet();
 				for(Node key: keys){
-					
 					if ( freqNodes.get( key ) > 1 ) {
 						newArrayNodes.add( key );
 					}
 				}
 			
 			case "all" :
-			    Set<Node> keys = freqNodes.keySet();
 				for(Node key: keys){
 					newArrayNodes.add( key );
 				}
