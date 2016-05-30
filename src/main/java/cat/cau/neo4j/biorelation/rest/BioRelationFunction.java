@@ -277,7 +277,7 @@ public class BioRelationFunction {
 		}
 		
 		Set<Node> keys = freqNodes.keySet();
-
+				
 		switch ( method ) {
 		
 			case "maximum" :
@@ -286,6 +286,7 @@ public class BioRelationFunction {
 						newArrayNodes.add( key );
 					}
 				}
+				break;
 				
 			case "minimum" :
 				for(Node key: keys){
@@ -293,13 +294,18 @@ public class BioRelationFunction {
 						newArrayNodes.add( key );
 					}
 				}
+				break;
 			
 			case "all" :
 				for(Node key: keys){
 					newArrayNodes.add( key );
 				}
+				break;
 			
-			default: newArrayNodes = arrayNodes;
+			default:
+				newArrayNodes = arrayNodes;
+				break;
+
 		}
 		
 		return newArrayNodes;

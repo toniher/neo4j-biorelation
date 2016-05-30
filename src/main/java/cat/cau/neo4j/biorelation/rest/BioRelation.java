@@ -492,8 +492,8 @@ public class BioRelation {
 	}
 
 	@GET
-	@Path("/rels/common/{type}/{list}")
-	public Response getCommonRelations(@PathParam("type") String type, @PathParam("list") String list, @Context GraphDatabaseService db) throws IOException {
+	@Path("/rels/common/{type}/{list}{method: (/[^/]+?)?}")
+	public Response getCommonRelations(@PathParam("type") String type, @PathParam("list") String list, @PathParam("method") String methStr, @Context GraphDatabaseService db) throws IOException {
 
 		String nodelabel = "MOL";
 		String nodeproperty = "id"; // Array synonyms
@@ -510,6 +510,16 @@ public class BioRelation {
 		}
 
 		String[] arrayAcc = list.split("-",-1);
+		
+		String method = "all";
+		
+		if ( methStr.startsWith("/") ) {
+			method = methStr.replace("/", "");
+			
+			if ( method.equals("") ) {
+				method = "all";
+			}
+		}
 		
 		BioRelationHelper helper = new BioRelationHelper(); 
 		BioRelationFunction func = new BioRelationFunction();
@@ -530,7 +540,7 @@ public class BioRelation {
 
 		if ( type.equals( "go" ) ) {
 			// Iterate by term_type
-			commonNodes = func.getCommonNodesSet( listNodes, "term_type", "minimum", arrayAcc.length, db );
+			commonNodes = func.getCommonNodesSet( listNodes, "term_type", method, arrayAcc.length, db );
 		} else {
 			commonNodes.put( "tax", listNodes );
 		}
