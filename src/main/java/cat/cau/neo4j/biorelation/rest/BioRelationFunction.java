@@ -72,6 +72,10 @@ public class BioRelationFunction {
 
 	public ArrayList<Node> getAllLinkedNodes( String baselabel, String label, String property, String value, String relation, String distinct, GraphDatabaseService db ) {
 	
+		if ( ! distinct.equals("distinct") ) {
+			distinct = "";
+		}
+	
 		// Query, we control if distinct through string
 		String query = "MATCH (n:"+baselabel+")-["+relation+"]->(m:"+label+") where n."+property+" in "+value+" return "+distinct+" m;";
 	

@@ -447,8 +447,8 @@ public class BioRelation {
 	}
 
 	@GET
-	@Path("/rels/{type}/{list}")
-	public Response getRelations(@PathParam("type") String type, @PathParam("list") String list, @Context GraphDatabaseService db) throws IOException {
+	@Path("/rels/{type}/{list}{method: (/[^/]+?)?}")
+	public Response getRelations(@PathParam("type") String type, @PathParam("list") String list, @PathParam("method") String methStr, @Context GraphDatabaseService db) throws IOException {
 
 		String nodelabel = "MOL";
 		String nodeproperty = "id"; // Array synonyms
@@ -480,7 +480,17 @@ public class BioRelation {
 		
 		strValues = "["  + StringUtils.join( arrayAcc, "," ) +  "]";
 
-		listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, "distinct", db );
+		String method = "all";
+		
+		if ( methStr.startsWith("/") ) {
+			method = methStr.replace("/", "");
+			
+			if ( method.equals("") ) {
+				method = "all";
+			}
+		}
+		
+		listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, method, db );
 
 		// For all listNodes
 		// Get relationships, return according above
