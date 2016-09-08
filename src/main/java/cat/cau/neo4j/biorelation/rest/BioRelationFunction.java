@@ -105,7 +105,7 @@ public class BioRelationFunction {
 		}
 	
 		// Query, we control if distinct through string
-		String query = "MATCH (n:"+baselabel+" { "+property+":'"+value+"' })-["+relation+"]->(m:"+label+")  "+value+" return "+distinct+" m;";
+		String query = "MATCH (n:"+baselabel+" { "+property+":'"+value+"' })-["+relation+"]->(m:"+label+") return "+distinct+" m;";
 	
 		ArrayList<Node> linkedNodes = new ArrayList<Node>();
 
