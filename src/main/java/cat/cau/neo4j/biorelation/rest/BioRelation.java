@@ -470,16 +470,7 @@ public class BioRelation {
 		BioRelationFunction func = new BioRelationFunction();
 
 		ArrayList<Node> listNodes = new ArrayList<Node>();
-
-		// Prepare string of values
-		String strValues;
 		
-		for (int i = 0; i < arrayAcc.length; i++) {
-			arrayAcc[i] = "\"" + arrayAcc[i] + "\"";
-		}
-		
-		strValues = "["  + StringUtils.join( arrayAcc, "," ) +  "]";
-
 		String method = "all";
 		
 		if ( methStr.startsWith("/") ) {
@@ -490,8 +481,29 @@ public class BioRelation {
 			}
 		}
 		
-		listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, method, db );
+		
+		if ( method.equals("distinct") ) {
+			
+				for (int i = 0; i < arrayAcc.length; i++) {
+					
+					listNodes.addAll( func.getAllLinkedNodes( nodelabel, label, nodeproperty, arrayAcc[i], relproperty, method, db ) );
+					
+				}	
 
+		} else {
+		
+			// Prepare string of values
+			String strValues;
+		
+			for (int i = 0; i < arrayAcc.length; i++) {
+				arrayAcc[i] = "\"" + arrayAcc[i] + "\"";
+			}
+			strValues = "["  + StringUtils.join( arrayAcc, "," ) +  "]";
+
+			listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, method, db );
+
+		}
+		
 		// For all listNodes
 		// Get relationships, return according above
 

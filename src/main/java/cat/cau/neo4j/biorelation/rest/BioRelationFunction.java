@@ -98,6 +98,34 @@ public class BioRelationFunction {
 	
 	}
 	
+	public ArrayList<Node> getLinkedNodes( String baselabel, String label, String property, String value, String relation, String distinct, GraphDatabaseService db ) {
+	
+		if ( ! distinct.equals("distinct") ) {
+			distinct = "";
+		}
+	
+		// Query, we control if distinct through string
+		String query = "MATCH (n:"+baselabel+" { "+property+":'"+value+"' })-["+relation+"]->(m:"+label+")  "+value+" return "+distinct+" m;";
+	
+		ArrayList<Node> linkedNodes = new ArrayList<Node>();
+
+		try ( Transaction tx = db.beginTx();
+			Result result = db.execute( query )
+
+		){
+			Iterator<Node> node_column = result.columnAs( "m" );
+			for ( Node node : IteratorUtil.asIterable( node_column ) ) {
+				linkedNodes.add( node );
+			}
+	
+			tx.success();
+		
+		}
+	
+		return linkedNodes;
+	
+	}
+	
 	public ArrayList<Integer> calcDistanceNodes( ArrayList<Node> arrayNodes, Node queryNode, String type ) {
 	
 		ArrayList<Integer> distances = new ArrayList<Integer>();
