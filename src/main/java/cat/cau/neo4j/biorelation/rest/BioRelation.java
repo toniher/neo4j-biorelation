@@ -486,7 +486,7 @@ public class BioRelation {
 			
 				for (int i = 0; i < arrayAcc.length; i++) {
 					
-					listNodes.addAll( func.getAllLinkedNodes( nodelabel, label, nodeproperty, arrayAcc[i], relproperty, method, db ) );
+					listNodes.addAll( func.getLinkedNodes( nodelabel, label, nodeproperty, arrayAcc[i], relproperty, method, db ) );
 					
 				}	
 
