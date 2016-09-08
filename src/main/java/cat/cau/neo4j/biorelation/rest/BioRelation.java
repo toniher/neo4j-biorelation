@@ -495,12 +495,16 @@ public class BioRelation {
 		// For all listNodes
 		// Get relationships, return according above
 
-		// JsonArray jsonArray = helper.arrayListNodes2JSON( listNodes, db );
-
-		JsonObject jsonRoot = helper.arrayListNodes2JSONkeyRoot( listNodes, "term_type", db );
-
-		String outputStr = jsonRoot.toString();
+		String outputStr;
 		
+		if ( type.equals( "go" ) ) {
+			JsonObject jsonRoot = helper.arrayListNodes2JSONkeyRoot( listNodes, "term_type", db );
+			outputStr = jsonRoot.toString();
+		} else {
+			JsonArray jsonRoot = helper.arrayListNodes2JSON( listNodes, db );
+			outputStr = jsonRoot.toString();
+		}
+				
 		return Response.ok( outputStr, MediaType.APPLICATION_JSON).build();
 
 	}
