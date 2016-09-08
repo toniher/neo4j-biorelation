@@ -10,6 +10,7 @@ import org.neo4j.graphdb.Transaction;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -64,6 +65,65 @@ public class BioRelationHelper {
 		}
 		
 		return jsonArray;
+	}
+
+	public JsonObject arrayListNodes2JSONkeyRoot( ArrayList<Node> arrayNodes, String keyRoot, GraphDatabaseService db ) {
+		
+		JsonObject jsonRoot = new JsonObject();
+		
+		Iterator<Node> nodeIterator = arrayNodes.iterator();
+		while(nodeIterator.hasNext()){
+			
+			Node lNode = nodeIterator.next();
+			String prop;
+			String propValue = "undefined"; // In case something is wrong
+
+			JsonObject jsonObject = new JsonObject();
+
+			try (Transaction tx = db.beginTx()) {
+
+				Iterable<String> lNodeProps = lNode.getPropertyKeys();
+				Iterator<String> itrProp = lNodeProps.iterator();
+				while ( itrProp.hasNext() ) {
+
+						prop = itrProp.next();
+						String value = lNode.getProperty( prop ).toString();
+						
+						if ( StringUtils.isNumeric( value ) ) {
+							int valueInt = Integer.parseInt( value );
+							double valueFloat = Float.parseFloat( value );
+							
+							if ( valueInt == valueFloat ) {
+								jsonObject.add( prop, valueInt );
+							} else {
+								jsonObject.add( prop, valueFloat );
+							}
+						} else {
+						
+							jsonObject.add( prop, value );
+						}
+
+						if ( prop == keyRoot ) {
+							if ( jsonRoot.get(value) == null ) {
+
+								propValue = value;
+
+								jsonRoot.add( value, new JsonArray() );
+							}
+						}
+
+				}
+
+				tx.success();
+			}
+
+			JsonArray tempJsonArray = jsonRoot.get(propValue).asArray();
+			tempJsonArray.add( jsonObject );
+			jsonRoot.set( propValue, tempJsonArray );
+
+		}
+		
+		return jsonRoot;
 	}
 
 
