@@ -22,9 +22,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
+
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Enumeration;
 
 @Path("/")
 public class BioRelation {
@@ -472,7 +475,8 @@ public class BioRelation {
 		BioRelationFunction func = new BioRelationFunction();
 
 		ArrayList<Node> listNodes = new ArrayList<Node>();
-		
+		Hashtable<String, ArrayList<Node>> mapNodes = new Hashtable<String, ArrayList<Node>>();
+
 		String method = "all";
 		
 		if ( methStr.startsWith("/") ) {
@@ -482,30 +486,24 @@ public class BioRelation {
 				method = "all";
 			}
 		}
-		
-		
-		if ( method.equals("distinct") ) {
+
+		for (int i = 0; i < arrayAcc.length; i++) {
 			
-				for (int i = 0; i < arrayAcc.length; i++) {
-					
-					listNodes.addAll( func.getLinkedNodes( nodelabel, label, nodeproperty, arrayAcc[i], relproperty, method, db ) );
-					
-				}	
-
-		} else {
-		
-			// Prepare string of values
-			String strValues;
-		
-			for (int i = 0; i < arrayAcc.length; i++) {
-				arrayAcc[i] = "\"" + arrayAcc[i] + "\"";
-			}
-			strValues = "["  + StringUtils.join( arrayAcc, "," ) +  "]";
-
-			listNodes = func.getAllLinkedNodes( nodelabel, label, nodeproperty, strValues, relproperty, method, db );
+			mapNodes.put( arrayAcc[i], func.getLinkedNodes( nodelabel, label, nodeproperty, arrayAcc[i], relproperty, "distinct", db ) );
 
 		}
-		
+
+
+		Enumeration<String> enumKey = mapNodes.keys();
+		while(enumKey.hasMoreElements()) {
+			String key = enumKey.nextElement();
+			listNodes.addAll( mapNodes.get(key) );
+		}
+
+		if ( ! method.equals( "all" ) ) {
+			listNodes = helper.nonRedundantArrayNodeList( listNodes );
+		}
+
 		// For all listNodes
 		// Get relationships, return according above
 
