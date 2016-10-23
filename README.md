@@ -4,7 +4,7 @@ This is an unmanaged extension. Details at: http://neo4j.com/docs/stable/server-
 
 ## REQUIREMENTS
 
-You would need to import NCBI taxonomy and Gene Ontology into your Neo4j Database. The following Py2Neo scripts are used: https://github.com/toniher/biomirror/tree/master/neo4j
+You would need to import NCBI taxonomy, Gene Ontology and UniProt into your Neo4j Database. The scripts and instructions can be found at scripts directory in this repository.
 
 
 ## INSTALL
