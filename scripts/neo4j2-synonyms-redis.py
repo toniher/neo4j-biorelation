@@ -40,7 +40,7 @@ def add_synonym(line):
 		synonyms[molid].append( molid )
 
 	#print statement
-	if origin in ["GI", "RefSeq", "UniProtKB-ID"] :
+	if origin in ["RefSeq", "UniProtKB-ID"] :
 		synonyms[molid].append( name )
 
 def process_names( names ):
