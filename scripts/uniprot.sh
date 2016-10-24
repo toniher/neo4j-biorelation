@@ -37,7 +37,7 @@ python $SCRIPTPATH/neo4j2-synonyms-add-from-redis.py $GOADIR/$INFOFILE.protein >
 # DIR of parts
 DIR=$GOADIR/mol
 
-mkdir -p $DIR; cd $DIR; split -l 10000000 ../$INFOFILE.extra $INFOFILE.extra
+mkdir -p $DIR; cd $DIR; split -l 5000000 ../$INFOFILE.extra $INFOFILE.extra
 
 echo "Modify files"
 
@@ -72,7 +72,7 @@ cut -f 1,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ )
 # DIR of parts
 DIR=$GOADIR/moltaxon
 
-mkdir -p $DIR; cd $DIR; split -l 10000000 ../$INFOFILE.reduced $INFOFILE.reduced
+mkdir -p $DIR; cd $DIR; split -l 5000000 ../$INFOFILE.reduced $INFOFILE.reduced
 
 
 echo "Modify files"
@@ -100,7 +100,7 @@ cut -f 1,2,3,4,5,6 $GOAFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[0]=~/^U
 #DIR of parts
 DIR=$GOADIR/molgoa
 
-mkdir -p $DIR; cd $DIR; split -l 10000000 ../$GOAFILE.reduced $GOAFILE.reduced
+mkdir -p $DIR; cd $DIR; split -l 5000000 ../$GOAFILE.reduced $GOAFILE.reduced
 
 echo "Modify files"
 
