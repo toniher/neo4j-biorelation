@@ -6,6 +6,8 @@ This is an unmanaged extension. Details at: http://neo4j.com/docs/stable/server-
 
 You would need to import NCBI taxonomy, Gene Ontology and UniProt into your Neo4j Database. The scripts and instructions can be found at scripts directory in this repository.
 
+* Java 1.8
+* Compatible with Neo4j 3.0.6
 
 ## INSTALL
 
