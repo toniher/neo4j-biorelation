@@ -36,7 +36,8 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
     * curl http://localhost:7474/biodb/distance/go/GO:0004180/GO:0004866 -> Distance (hops) between carboxypeptidase and endopeptidase GOs
     * curl http://localhost:7474/biodb/path/go/GO:0004180/GO:0004866 -> Path between carboxypeptidase and endopeptidase GOs
     * curl http://localhost:7474/biodb/common/go/GO:0004180-GO:0004866 LCA between carboxypeptidase and endopeptidase GOs
-
+	* curl http://localhost:7474/biodb/rels/go/Q96IY4 -> GO information about Q96IY4
+	* curl http://localhost:7474/biodb/rels/tax/Q96IY4 -> Taxon information about Q96IY4
 
 ## TODO
 
@@ -48,9 +49,6 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
     MATCH (n:TAXID { id:9604 })<-[r*]-(m:TAXID)
     where not(()-->m)
     return distinct m;
-
-* curl http://localhost:7474/biodb/rels/go/MOLID -> GO information about this MOLID
-* curl http://localhost:7474/biodb/rels/tax/MOLID -> Taxon information about this MOLID
 
 
 * Make tests work.
