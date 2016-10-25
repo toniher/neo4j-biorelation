@@ -15,9 +15,9 @@ You would need to import NCBI taxonomy, Gene Ontology and UniProt into your Neo4
 
 2. Copy target/neo4j-biorelation-0.2.jar to the plugins/ directory of your Neo4j server.
 
-3. Configure Neo4j by adding a line to conf/neo4j-server.properties:
+3. Configure Neo4j by adding a line to conf/neo4j.conf:
 
-    org.neo4j.server.thirdparty_jaxrs_classes=cat.cau.neo4j.biorelation.rest=/biodb
+    dbms.unmanaged_extension_classes=cat.cau.neo4j.biorelation.rest=/biodb
 
 In this case, queries will need biodb prepended.
 

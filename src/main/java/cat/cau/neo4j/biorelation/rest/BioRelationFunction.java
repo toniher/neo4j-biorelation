@@ -16,10 +16,8 @@ import org.neo4j.graphdb.PathExpanders;
 
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
-import org.neo4j.graphdb.Expander;
 
-import org.neo4j.helpers.collection.IteratorUtil;
-
+import org.neo4j.helpers.collection.Iterators;
 
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.Direction;
@@ -58,7 +56,7 @@ public class BioRelationFunction {
 
 		){
 			Iterator<Node> node_column = result.columnAs( "m" );
-			for ( Node node : IteratorUtil.asIterable( node_column ) ) {
+			for ( Node node : Iterators.asIterable( node_column ) ) {
 				leafNodes.add( node );
 			}
 	
@@ -86,7 +84,7 @@ public class BioRelationFunction {
 
 		){
 			Iterator<Node> node_column = result.columnAs( "m" );
-			for ( Node node : IteratorUtil.asIterable( node_column ) ) {
+			for ( Node node : Iterators.asIterable( node_column ) ) {
 				linkedNodes.add( node );
 			}
 	
@@ -114,7 +112,7 @@ public class BioRelationFunction {
 
 		){
 			Iterator<Node> node_column = result.columnAs( "m" );
-			for ( Node node : IteratorUtil.asIterable( node_column ) ) {
+			for ( Node node : Iterators.asIterable( node_column ) ) {
 				linkedNodes.add( node );
 			}
 	
