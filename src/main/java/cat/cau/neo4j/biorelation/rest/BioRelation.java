@@ -522,3 +522,4 @@ public class BioRelation {
 	}
 
 }
+

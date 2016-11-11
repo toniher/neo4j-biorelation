@@ -15,13 +15,19 @@ import com.eclipsesource.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringJoiner;
+
 
 public class BioRelationHelper {
+
+	JsonObject InJsonRoot;
+	String InValue;
 
 	public JsonArray arrayListNodes2JSON( ArrayList<Node> arrayNodes, GraphDatabaseService db ) {
 		
@@ -40,22 +46,10 @@ public class BioRelationHelper {
 				Iterator<String> itrProp = lNodeProps.iterator();
 				while ( itrProp.hasNext() ) {
 
-						String prop = itrProp.next();
-						String value = lNode.getProperty( prop ).toString();
-						
-						if ( StringUtils.isNumeric( value ) ) {
-							int valueInt = Integer.parseInt( value );
-							double valueFloat = Float.parseFloat( value );
-							
-							if ( valueInt == valueFloat ) {
-								jsonObject.add( prop, valueInt );
-							} else {
-								jsonObject.add( prop, valueFloat );
-							}
-						} else {
-						
-							jsonObject.add( prop, value );
-						}
+					String prop = itrProp.next();
+
+					jsonObject = this.addValueFromProp( jsonObject, lNode, prop );
+
 				}
 
 				tx.success();
@@ -87,29 +81,16 @@ public class BioRelationHelper {
 				Iterator<String> itrProp = lNodeProps.iterator();
 				while ( itrProp.hasNext() ) {
 
-						prop = itrProp.next();
-						String value = lNode.getProperty( prop ).toString();
-						
-						if ( StringUtils.isNumeric( value ) ) {
-							int valueInt = Integer.parseInt( value );
-							double valueFloat = Float.parseFloat( value );
-							
-							if ( valueInt == valueFloat ) {
-								jsonObject.add( prop, valueInt );
-							} else {
-								jsonObject.add( prop, valueFloat );
-						}
-					} else {
-					
-						jsonObject.add( prop, value );
-					}
+					prop = itrProp.next();
+
+					jsonObject = this.addValueFromProp( jsonObject, lNode, prop );
 
 					if ( prop.equals( keyRoot ) ) {
 
-						propValue = value;
-						if ( jsonRoot.get(value) == null ) {
-							jsonRoot.add( value, new JsonArray() );
-						}
+						this.addValueFromProp2Root( jsonRoot, lNode, prop );
+						propValue = this.InValue;
+						jsonRoot = this.InJsonRoot;
+
 					}
 
 				}
@@ -152,21 +133,8 @@ public class BioRelationHelper {
 				while ( itrProp.hasNext() ) {
 	
 						String prop = itrProp.next();
-						String value = lNode.getProperty( prop ).toString();
-						
-						if ( StringUtils.isNumeric( value ) ) {
-							int valueInt = Integer.parseInt( value );
-							double valueFloat = Float.parseFloat( value );
-							
-							if ( valueInt == valueFloat ) {
-								jsonObject.add( prop, valueInt );
-							} else {
-								jsonObject.add( prop, valueFloat );
-							}
-						} else {
-						
-							jsonObject.add( prop, value );
-						}
+
+						jsonObject = this.addValueFromProp( jsonObject, lNode, prop );
 						
 						// Adding extra arrayvalue
 						jsonObject.add( extra, arrayInteger.get( intIter ) );
@@ -184,6 +152,90 @@ public class BioRelationHelper {
 		return jsonArray;
 	}
 
+	private JsonObject addValueFromProp( JsonObject jsonObject, Node lNode, String prop ) {
+
+		String value;
+
+		Object propValue = lNode.getProperty( prop, null );
+
+		if ( propValue != null ) {
+
+			if ( propValue.getClass().isArray() ) {
+				JsonArray jsonArray = new JsonArray();
+
+				// Let's cast to String[]
+				for ( String s: (String[]) propValue ) {
+					jsonArray = this.addValue2JsonArray( jsonArray, s );
+				}
+
+				jsonObject.add( prop, jsonArray );
+
+			} else {
+
+				value = propValue.toString();
+
+				jsonObject = this.addValue2JsonObject( jsonObject, prop, value ); 
+
+			}
+
+		}
+
+		return jsonObject;
+	}
+
+	private JsonObject addValue2JsonObject( JsonObject jsonObject, String prop, String value ) {
+
+		if ( StringUtils.isNumeric( value ) ) {
+			int valueInt = Integer.parseInt( value );
+			double valueFloat = Float.parseFloat( value );
+			
+			if ( valueInt == valueFloat ) {
+				jsonObject.add( prop, valueInt );
+			} else {
+				jsonObject.add( prop, valueFloat );
+			}
+		} else {
+	
+			jsonObject.add( prop, value );
+		}
+
+		return jsonObject;
+	}
+
+
+	private JsonArray addValue2JsonArray( JsonArray jsonArray, String value ) {
+
+		if ( StringUtils.isNumeric( value ) ) {
+			int valueInt = Integer.parseInt( value );
+			double valueFloat = Float.parseFloat( value );
+			
+			if ( valueInt == valueFloat ) {
+				jsonArray.add( valueInt );
+			} else {
+				jsonArray.add( valueFloat );
+			}
+		} else {
+	
+			jsonArray.add( value );
+		}
+
+		return jsonArray;
+	}
+
+	private void addValueFromProp2Root( JsonObject jsonRoot, Node lNode, String prop ) {
+
+		String value;
+
+		value = lNode.getProperty( prop ).toString();
+
+		if ( jsonRoot.get(value) == null ) {
+			jsonRoot.add( value, new JsonArray() );
+		}
+
+		this.InJsonRoot = jsonRoot;
+		this.InValue = value;
+
+	}
 
 	public JsonObject hashMapNodes2JSON( Hashtable<String, ArrayList<Node>> hashTableNodes, GraphDatabaseService db ) {
 
@@ -262,5 +314,6 @@ public class BioRelationHelper {
 		return( outputList );
 
 	}
-
 }
+
+

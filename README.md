@@ -32,13 +32,13 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
 
 5. Query it over HTTP:
 
-    * curl http://localhost:7474/biodb/helloworld -> Dummy
-    * curl http://localhost:7474/biodb/distance/tax/9606/10114 -> Distance (hops) between human and guinea pig
-    * curl http://localhost:7474/biodb/path/tax/9606/10114 -> Path between human and guinea pig
-    * curl http://localhost:7474/biodb/common/tax/9606-10114 -> LCA between human and guinea pig. Many values allowed
-    * curl http://localhost:7474/biodb/distance/go/GO:0004180/GO:0004866 -> Distance (hops) between carboxypeptidase and endopeptidase GOs
-    * curl http://localhost:7474/biodb/path/go/GO:0004180/GO:0004866 -> Path between carboxypeptidase and endopeptidase GOs
-    * curl http://localhost:7474/biodb/common/go/GO:0004180-GO:0004866 LCA between carboxypeptidase and endopeptidase GOs
+	* curl http://localhost:7474/biodb/helloworld -> Dummy
+	* curl http://localhost:7474/biodb/distance/tax/9606/10114 -> Distance (hops) between human and guinea pig
+	* curl http://localhost:7474/biodb/path/tax/9606/10114 -> Path between human and guinea pig
+	* curl http://localhost:7474/biodb/common/tax/9606-10114 -> LCA between human and guinea pig. Many values allowed
+	* curl http://localhost:7474/biodb/distance/go/GO:0004180/GO:0004866 -> Distance (hops) between carboxypeptidase and endopeptidase GOs
+	* curl http://localhost:7474/biodb/path/go/GO:0004180/GO:0004866 -> Path between carboxypeptidase and endopeptidase GOs
+	* curl http://localhost:7474/biodb/common/go/GO:0004180-GO:0004866 LCA between carboxypeptidase and endopeptidase GOs
 	* curl http://localhost:7474/biodb/rels/go/Q96IY4 -> GO information about Q96IY4
 	* curl http://localhost:7474/biodb/rels/tax/Q96IY4 -> Taxon information about Q96IY4
 
