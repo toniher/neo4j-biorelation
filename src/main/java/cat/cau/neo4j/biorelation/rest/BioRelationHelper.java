@@ -15,13 +15,11 @@ import com.eclipsesource.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.StringJoiner;
 
 
 public class BioRelationHelper {
