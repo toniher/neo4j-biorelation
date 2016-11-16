@@ -500,8 +500,10 @@ public class BioRelation {
 			listNodes.addAll( mapNodes.get(key) );
 		}
 
+		// TODO more methods!
 		if ( ! method.equals( "all" ) ) {
-			listNodes = helper.nonRedundantArrayNodeList( listNodes );
+			// By default let's remove non redundant
+			listNodes = helper.nonRedundantArrayNodeList( listNodes, db );
 		}
 
 		// For all listNodes

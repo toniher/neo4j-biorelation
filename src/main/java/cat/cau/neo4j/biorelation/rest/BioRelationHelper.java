@@ -279,34 +279,39 @@ public class BioRelationHelper {
 		return pathNodes;
 	}
 	
-	public ArrayList<Node> nonRedundantArrayNodeList( ArrayList<Node> inputList ) {
+	public ArrayList<Node> nonRedundantArrayNodeList( ArrayList<Node> inputList, GraphDatabaseService db ) {
 
 		Set<Integer> listNodeIds = new HashSet<Integer>();
 		ArrayList<Node> outputList = new ArrayList<Node>();
 
 		Iterator<Node> nodeIterator = inputList.iterator();
-		while(nodeIterator.hasNext()){
-			
-			Node lNode = nodeIterator.next();
 
-			Iterable<String> lNodeProps = lNode.getPropertyKeys();
-			Iterator<String> itrProp = lNodeProps.iterator();
-			while ( itrProp.hasNext() ) {
+		try (Transaction tx = db.beginTx()) {
 
-				String prop = itrProp.next();
-
-				if ( prop.equals("id") ) {
-					String value = lNode.getProperty( prop ).toString();
-					if ( StringUtils.isNumeric( value ) ) {
-						int valueInt = Integer.parseInt( value );
-
-						if ( ! listNodeIds.contains( valueInt ) ) {
-							listNodeIds.add( valueInt );
-							outputList.add( lNode );
-						}
-					} 
+			while(nodeIterator.hasNext()){
+				
+				Node lNode = nodeIterator.next();
+	
+				Iterable<String> lNodeProps = lNode.getPropertyKeys();
+				Iterator<String> itrProp = lNodeProps.iterator();
+				while ( itrProp.hasNext() ) {
+	
+					String prop = itrProp.next();
+	
+					if ( prop.equals("id") ) {
+						String value = lNode.getProperty( prop ).toString();
+						if ( StringUtils.isNumeric( value ) ) {
+							int valueInt = Integer.parseInt( value );
+	
+							if ( ! listNodeIds.contains( valueInt ) ) {
+								listNodeIds.add( valueInt );
+								outputList.add( lNode );
+							}
+						} 
+					}
 				}
 			}
+
 		}
 
 		return( outputList );
