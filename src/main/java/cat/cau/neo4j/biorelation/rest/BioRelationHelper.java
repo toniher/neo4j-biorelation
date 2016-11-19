@@ -359,8 +359,12 @@ public class BioRelationHelper {
 			
 			Set<Integer> nodeIds = countNodeIds.keySet();
 			for ( Integer nodeId: nodeIds ){
+				System.out.println( nodeId );
 				
-				if ( countNodeIds.get( nodeId ) >= min ) {
+				Integer count = countNodeIds.get( nodeId ):
+				System.out.println( count );
+
+				if ( count >= min ) {
 					Node inNode = tableNodes.get( nodeId );
 					outputList.add( inNode );
 				}
