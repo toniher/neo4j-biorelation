@@ -502,8 +502,18 @@ public class BioRelation {
 
 		// TODO more methods!
 		if ( ! method.equals( "all" ) ) {
-			// By default let's remove non redundant
-			listNodes = helper.nonRedundantArrayNodeList( listNodes, db );
+			
+			if ( method.equals( "nonred" ) ) {
+				// By default let's remove non redundant
+				listNodes = helper.nonRedundantArrayNodeList( listNodes, db );			
+			}
+			else {
+				
+				int min = ceil( arrayAcc.length / 2 ); //TODO: This could have more stuff
+				listNodes = helper.minArrayNodeList( listNodes, min, db );			
+				
+			}
+			
 		}
 
 		// For all listNodes

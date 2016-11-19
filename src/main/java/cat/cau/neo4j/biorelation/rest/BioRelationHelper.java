@@ -317,6 +317,62 @@ public class BioRelationHelper {
 		return( outputList );
 
 	}
+	
+	public ArrayList<Node> minArrayNodeList( ArrayList<Node> inputList, Integer min, GraphDatabaseService db ) {
+
+		Hashtable<Integer, Integer> countNodeIds= new Hashtable<Integer, Integer>();
+		Hashtable<Integer, Node> tableNodes= new Hashtable<Integer, Node>();
+
+		Set<Integer> listNodeIds = new HashSet<Integer>();
+		ArrayList<Node> outputList = new ArrayList<Node>();
+
+		Iterator<Node> nodeIterator = inputList.iterator();
+
+		try (Transaction tx = db.beginTx()) {
+
+			while(nodeIterator.hasNext()){
+				
+				Node lNode = nodeIterator.next();
+	
+				Iterable<String> lNodeProps = lNode.getPropertyKeys();
+				Iterator<String> itrProp = lNodeProps.iterator();
+				while ( itrProp.hasNext() ) {
+	
+					String prop = itrProp.next();
+	
+					if ( prop.equals("id") ) {
+						String value = lNode.getProperty( prop ).toString();
+						if ( StringUtils.isNumeric( value ) ) {
+							int valueInt = Integer.parseInt( value );
+	
+							if ( ! countNodeIds.contains( valueInt ) ) {
+								countNodeIds.put( valueInt, 1 );
+								tableNodes.put( valueInt, lNode );
+							} else {
+								Integer count = countNodeIds.get( valueInt );
+								countNodeIds.put( valueInt, count + 1 );
+							}
+						} 
+					}
+				}
+			}
+			
+			Set<Integet> nodeIds = countNodeIds.keySet();
+			for ( Integer nodeId: nodeIds ){
+				
+				if ( countNodeIds.get( nodeId ) >= min ) {
+					Node inNode = tableNodes.get( nodeId );
+					outputList.add( inNode );
+				}
+				
+			}
+
+		}
+
+		return( outputList );
+
+	}
+	
 }
 
 
