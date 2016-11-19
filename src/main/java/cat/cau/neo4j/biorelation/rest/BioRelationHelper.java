@@ -357,7 +357,7 @@ public class BioRelationHelper {
 				}
 			}
 			
-			Set<Integet> nodeIds = countNodeIds.keySet();
+			Set<Integer> nodeIds = countNodeIds.keySet();
 			for ( Integer nodeId: nodeIds ){
 				
 				if ( countNodeIds.get( nodeId ) >= min ) {

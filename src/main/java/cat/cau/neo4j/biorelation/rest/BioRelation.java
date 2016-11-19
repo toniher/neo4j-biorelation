@@ -509,7 +509,7 @@ public class BioRelation {
 			}
 			else {
 				
-				int min = ceil( arrayAcc.length / 2 ); //TODO: This could have more stuff
+				int min = (int) Math.ceil( arrayAcc.length / 2 ); //TODO: This could have more stuff
 				listNodes = helper.minArrayNodeList( listNodes, min, db );			
 				
 			}
