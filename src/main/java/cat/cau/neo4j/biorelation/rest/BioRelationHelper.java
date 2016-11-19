@@ -345,7 +345,7 @@ public class BioRelationHelper {
 						if ( StringUtils.isNumeric( value ) ) {
 							int valueInt = Integer.parseInt( value );
 	
-							if ( ! countNodeIds.contains( valueInt ) ) {
+							if ( ! countNodeIds.containsKey( valueInt ) ) {
 								countNodeIds.put( valueInt, 1 );
 								tableNodes.put( valueInt, lNode );
 							} else {
@@ -359,10 +359,8 @@ public class BioRelationHelper {
 			
 			Set<Integer> nodeIds = countNodeIds.keySet();
 			for ( Integer nodeId: nodeIds ){
-				System.out.println( nodeId );
 				
-				Integer count = countNodeIds.get( nodeId ):
-				System.out.println( count );
+				Integer count = countNodeIds.get( nodeId );
 
 				if ( count >= min ) {
 					Node inNode = tableNodes.get( nodeId );
