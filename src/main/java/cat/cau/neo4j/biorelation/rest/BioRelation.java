@@ -507,6 +507,10 @@ public class BioRelation {
 				// By default let's remove non redundant
 				listNodes = helper.nonRedundantArrayNodeList( listNodes, db );			
 			}
+			else if ( method.equals( "ancestor" ) ) {
+				listNodes = helper.nonRedundantArrayNodeList( listNodes, db );
+				listNodes = helper.ancestorArrayNodeList( listNodes, type, db );
+			}
 			else {
 				
 				int min = (int) Math.ceil( ( arrayAcc.length + 1 ) / 2 ); //TODO: This could have more stuff

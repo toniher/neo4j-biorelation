@@ -374,7 +374,60 @@ public class BioRelationHelper {
 		return( outputList );
 
 	}
+
+	public ArrayList<Node> ancestorArrayNodeList( ArrayList<Node> inputList, String type, GraphDatabaseService db ) {
+
+		Hashtable<String, ArrayList<Node>> listNodesByType= new Hashtable<String, ArrayList<Node>>();
+
+		String nodeType = "taxon";
+
+		ArrayList<Node> outputList = new ArrayList<Node>();
+
+		Iterator<Node> nodeIterator = inputList.iterator();
+
+		try (Transaction tx = db.beginTx()) {
+
+			while(nodeIterator.hasNext()){
+				
+				Node lNode = nodeIterator.next();
 	
+				int nodeId;
+
+				Iterable<String> lNodeProps = lNode.getPropertyKeys();
+				Iterator<String> itrProp = lNodeProps.iterator();
+				while ( itrProp.hasNext() ) {
+
+					String prop = itrProp.next();
+
+					if ( prop.equals( "term_type" ) ) {
+						nodeType = lNode.getProperty( prop ).toString();
+
+						if ( ! listNodesByType.containsKey( nodeType ) ) {
+							listNodesByType.put( nodeType, new ArrayList<Node>() );
+						}
+					}
+
+					ArrayList<Node> tempArray = listNodesByType.get( nodeType );
+					tempArray.add( lNode );
+					listNodesByType.put( nodeType, tempArray );
+
+				}
+
+			}
+			
+			Set<String> types = listNodesByType.keySet();
+			for ( String nType: types ){
+				
+					// Process for type
+				
+			}
+
+		}
+
+		return( outputList );
+
+	}
+
 }
 
 
