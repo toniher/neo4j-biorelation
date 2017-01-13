@@ -10,7 +10,7 @@ You would need to import NCBI taxonomy, Gene Ontology and UniProt into your Neo4
 
 * Java 1.8
 * Maven >= 3.1
-* Compatible with Neo4j 3.0.6
+* Compatible with Neo4j 3.1.0
 
 ## INSTALL
 

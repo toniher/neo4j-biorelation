@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import py2neo
 from py2neo.packages.httpstream import http
-from py2neo.cypher import cypher_escape
 from multiprocessing import Pool
 
 import httplib
@@ -26,8 +25,7 @@ opts=parser.parse_args()
 
 logging.basicConfig(level=logging.ERROR)
 
-graph = py2neo.Graph()
-graph.bind("http://localhost:7474/db/data/")
+graph = py2neo.Graph("http://localhost:7474/db/data/")
 
 relationshipmap={}
 definition_list={}
@@ -38,8 +36,8 @@ numiter = 5000
 
 label = "GO_TERM"
 
-idxout = graph.cypher.execute("CREATE CONSTRAINT ON (n:"+label+") ASSERT n.acc IS UNIQUE")
-idxout = graph.cypher.execute("CREATE CONSTRAINT ON (n:"+label+") ASSERT n.id IS UNIQUE")
+idxout = graph.run("CREATE CONSTRAINT ON (n:"+label+") ASSERT n.acc IS UNIQUE")
+idxout = graph.run("CREATE CONSTRAINT ON (n:"+label+") ASSERT n.id IS UNIQUE")
 
 logging.info('adding definitions')
 reader = csv.reader(open(opts.termdeffile),delimiter="\t")
@@ -54,7 +52,7 @@ for row in reader:
 
 def process_statement( statements ):
     
-    tx = graph.cypher.begin()
+    tx = graph.begin()
 
     #print statements
     logging.info('proc sent')
@@ -109,7 +107,11 @@ for row in reader:
 
 list_statements.append( statements )
 
-res = p.map( process_statement, list_statements )
+
+print len( list_statements )
+
+for statements in list_statements :
+	process_statement( statements )
 
 
 logging.info('adding relationships')
@@ -135,7 +137,10 @@ for row in reader:
 
 #We force only one worker, fails if relation
 p = Pool(1)
-
 list_statements.append( statements )
-res = p.map( process_statement, list_statements )
+
+for statements in list_statements :
+	process_statement( statements )
+
+#res = p.map( process_statement, list_statements )
 

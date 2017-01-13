@@ -1,19 +1,24 @@
 # CONFIG parameters
 
 NEO4JSHELL=/data/soft/neo4j-community-3.0.6/bin/neo4j-shell
-#GOA: ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpa.gz
+GOAURL= ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpa.gz
 GOADIR=/data/db/go/goa
-#IDmapping: ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
+IDURL=ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
 MAPPINGDIR=/data/db/go/mapping
 MOMENTDIR=/data/toniher
 SCRIPTPATH=`pwd`
 
-#Info Uniprot: ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpi.gz
+INFOURL=ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpi.gz
 INFOFILE=goa_uniprot_all.gpi
 GOAFILE=goa_uniprot_all.gpa
 
+mkdir -p $GOADIR
+mkdir -p $MAPPINGDIR
+
 # Let's uncompress all files
 cd $GOADIR
+wget -c -t0 $GOAURL
+wget -c -t0 $INFOURL
 gunzip *gz
 
 # Base entries
@@ -26,6 +31,7 @@ rm $INFOFILE.base
 # Creating synonyms in Redis -> TODO, this MUST change
 
 cd $MAPPINGDIR
+wget -c -t0 $IDURL
 gunzip *gz
 
 python $SCRIPTPATH/neo4j2-synonyms-redis.py $MAPPINGDIR/idmapping.dat

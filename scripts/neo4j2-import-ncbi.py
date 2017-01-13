@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import py2neo
 from py2neo.packages.httpstream import http
-from py2neo.cypher import cypher_escape
 from multiprocessing import Pool
 
 import httplib
@@ -29,8 +28,7 @@ http.socket_timeout = 9999
 
 numiter = 5000
 
-graph = py2neo.Graph()
-graph.bind("http://localhost:7474/db/data/")
+graph = py2neo.Graph("http://localhost:7474/db/data/")
 
 label = "TAXID"
 
@@ -39,11 +37,11 @@ parentid={}
 scientific_list={}
 names_list={}
 
-idxout = graph.cypher.execute("CREATE CONSTRAINT ON (n:"+label+") ASSERT n.id IS UNIQUE")
+idxout = graph.run("CREATE CONSTRAINT ON (n:"+label+") ASSERT n.id IS UNIQUE")
 
 def process_statement( statements ):
     
-    tx = graph.cypher.begin()
+    tx = graph.begin()
 
     #print statements
     logging.info('proc sent')
@@ -58,7 +56,7 @@ def process_statement( statements ):
 
 poolnum = 4;
 
-p = Pool(poolnum)
+p = Pool(processes=poolnum)
 
 def create_taxid(line, number):
     taxid = str(line[0]).strip()
@@ -135,12 +133,18 @@ for row in reader:
 		statements = []
 
 list_statements.append( statements )
-res = p.map( process_statement, list_statements )
 
-idxout = graph.cypher.execute("CREATE INDEX ON :"+label+"(rank)")
+print len( list_statements )
+
+for statements in list_statements :
+	process_statement( statements )
+
+# p.map( process_statement, list_statements )
+
+idxout = graph.run("CREATE INDEX ON :"+label+"(rank)")
 
 # We keep no pool for relationship
-tx = graph.cypher.begin()
+tx = graph.begin()
 
 logging.info('adding relationships')
 iter = 0
@@ -158,12 +162,12 @@ for key in parentid:
     if ( iter > numiter ):
         tx.process()
         tx.commit()
-        tx = graph.cypher.begin()
+        tx = graph.begin()
         
         iter = 0
 
 tx.process()
 tx.commit()
 
-idxout = graph.cypher.execute("CREATE INDEX ON :"+label+"(scientific_name)")
-idxout = graph.cypher.execute("CREATE INDEX ON :"+label+"(name)")
+idxout = graph.run("CREATE INDEX ON :"+label+"(scientific_name)")
+idxout = graph.run("CREATE INDEX ON :"+label+"(name)")
