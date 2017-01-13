@@ -1,7 +1,7 @@
 # CONFIG parameters
 
 NEO4JSHELL=/data/soft/neo4j-community-3.0.6/bin/neo4j-shell
-GOAURL= ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpa.gz
+GOAURL=ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpa.gz
 GOADIR=/data/db/go/goa
 IDURL=ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
 MAPPINGDIR=/data/db/go/mapping
