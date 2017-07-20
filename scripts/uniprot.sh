@@ -34,7 +34,7 @@ cd $MAPPINGDIR
 wget -c -t0 $IDURL
 gunzip *gz
 
-python $SCRIPTPATH/neo4j2-synonyms-redis.py $MAPPINGDIR/idmapping.dat
+python $SCRIPTPATH/neo4j2-synonyms-fill-into-redis.py $MAPPINGDIR/idmapping.dat
 python $SCRIPTPATH/neo4j2-synonyms-add-from-redis.py $GOADIR/$INFOFILE.protein > $GOADIR/$INFOFILE.extra
 
 
