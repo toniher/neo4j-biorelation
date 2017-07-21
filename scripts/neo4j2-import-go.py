@@ -42,7 +42,7 @@ if opts.config is not None:
 								if data["neo4j"].has_key("port"):
 												conf["port"] = data["neo4j"]["port"]
 
-server = conf["protocol"]+"://"+conf["host"]+":"+conf["port"]
+server = conf["protocol"]+"://"+conf["host"]+":"+str( conf["port"] )
 
 logging.basicConfig(level=logging.ERROR)
 
