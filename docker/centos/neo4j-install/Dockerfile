@@ -48,10 +48,11 @@ RUN cd $NEO4J_PATH/lib; curl --fail --silent --show-error --location --remote-na
 
 WORKDIR $NEO4J_PATH
 
+VOLUME /scratch
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-EXPOSE 7474 7473 7687
+EXPOSE 7474 7473 7687 1337
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["neo4j"]
