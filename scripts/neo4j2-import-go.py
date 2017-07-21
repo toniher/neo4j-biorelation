@@ -20,12 +20,33 @@ parser.add_argument("termdeffile",
                     help="The term_definition.txt file as downloaded from the gene ontology site")
 parser.add_argument("term2termfile",
                     help="The term2term.txt file as downloaded from the gene ontology site")
+parser.add_argument("config",
+                    help="JSON configuration file")
 
 opts=parser.parse_args()
 
+conf = {}
+conf["host"] = "localhost"
+conf["port"] = 7474
+conf["protocol"] = "http"
+
+if opts.config is not None:
+		with open(opts.config) as json_data_file:
+				data = json.load(json_data_file)
+				
+				if data.has_key("neo4j"):
+								if data["neo4j"].has_key("host"):
+												conf["host"] = data["neo4j"]["host"]
+								if data["neo4j"].has_key("protocol"):
+												conf["protocol"] = data["neo4j"]["protocol"]
+								if data["neo4j"].has_key("port"):
+												conf["port"] = data["neo4j"]["port"]
+
+server = conf["protocol"]+"://"+conf["host"]+":"+conf["port"]
+
 logging.basicConfig(level=logging.ERROR)
 
-graph = py2neo.Graph("http://localhost:7474/db/data/")
+graph = py2neo.Graph( server+"/db/data/")
 
 relationshipmap={}
 definition_list={}
