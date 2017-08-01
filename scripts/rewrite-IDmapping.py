@@ -8,7 +8,7 @@ def main(argv):
 		if len(sys.argv) < 2:
 				sys.exit()
 
-		blackIds = {}
+		blackIds = dict()
 		pre = ""
 
 
@@ -23,14 +23,13 @@ def main(argv):
 				reader=csv.reader(f,delimiter='\t')
 				for row in reader:
 
-					if row[0] not in blackIds :
-
-
-						if row[0] != pre :
-							pre = row[0]
-							print row[0]+"\t"+"UniProtKB-AC"+"\t"+row[0]
-						print "\t".join( row )
-                        
+                                        if row[0] not in blackIds :
+                                        
+                                                if row[0] != pre :
+                                                        pre = row[0]
+                                                        print row[0]+"\t"+"UniProtKB-AC"+"\t"+row[0]
+                                                print "\t".join( row )
+                                                
 
 if __name__ == "__main__":
         main(sys.argv[1:])
