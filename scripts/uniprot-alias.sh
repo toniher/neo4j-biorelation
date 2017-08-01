@@ -84,8 +84,12 @@ DIR=$GOADIR/mapping
 mkdir -p $DIR; cd $DIR; split -l 5000000 $MAPPINGDIR/idmapping.new.dat idmapping
 
 
-echo "Modify files"
+echo "CREATE CONSTRAINT ON (a:ALIAS) ASSERT a.id IS UNIQUE;" > $MOMENTDIR/script
+$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX ON :ALIAS(source);" > $MOMENTDIR/script 
+$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
+echo "Modify files"
 for file in $DIR/*
 do
 	echo -e "id\tsource\talias" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
