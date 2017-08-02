@@ -1,7 +1,5 @@
 FROM biocorecrg/centos-perlbrew-pyenv-java
 
-ARG NEO4J_SHELL_VERSION=3.1
-ARG NEO4J_SHELL_VERSION_LONG=3.1.0
 ARG NEO4J_BIORELATION_VERSION=0.2.3
 ENV NEO4J_PATH /var/lib/neo4j
 ENV NEO4J_SHELL_BIN $NEO4J_PATH/bin/neo4j-shell
@@ -28,13 +26,6 @@ VOLUME /data
 
 # Extra processing
 ENV NEO4J_SHELL_BASE /tmp
-
-WORKDIR $NEO4J_SHELL_BASE
-
-# Install Neo4j-shell
-RUN git clone https://github.com/jexp/neo4j-shell-tools
-RUN cd neo4j-shell-tools; git checkout $NEO4J_SHELL_VERSION; mvn -Dmaven.test.skip=true clean package
-RUN cp $NEO4J_SHELL_BASE/neo4j-shell-tools/target/import-tools-$NEO4J_SHELL_VERSION_LONG.jar $NEO4J_PATH/lib 
 
 WORKDIR $NEO4J_SHELL_BASE
 
