@@ -1,6 +1,6 @@
 # CONFIG parameters
 
-NEO4JSHELL=/data/soft/neo4j-community-3.0.6/bin/neo4j-shell
+NEO4JSHELL=/data/soft/neo4j-community-3.1.5/bin/cypher-shell
 GOAURL=ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpa.gz
 GOADIR=/data/db/go/goa
 IDURL=ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
@@ -32,46 +32,36 @@ cd $MAPPINGDIR
 wget -c -t0 $IDURL
 gunzip *gz
 
-# Check mapping not in GOA INFO. about it
-cut -f1 $INFOFILE.protein > $MOMENTDIR/ID-info.txt
-cut -f1 $MAPPINGDIR/idmapping.dat > $MOMENTDIR/ID-mapping.txt
-
-comm -1 -3  $MOMENTDIR/ID-info.txt $MOMENTDIR/ID-mapping.txt > $MOMENTDIR/ID-mapping.exclude.txt
-
-# Generate different mapping
-python rewrite-IDmapping.py $MAPPINGDIR/idmapping.dat $MOMENTDIR/ID-mapping.exclude.txt > $MAPPINGDIR/idmapping.new.dat
-
-rm $MOMENTDIR/ID-mapping.txt; rm $MOMENTDIR/ID-info.txt; rm $MOMENTDIR/ID-mapping.exclude.txt;
-
+python $SCRIPTPATH/rewrite-IDmapping.py $MAPPINGDIR/idmapping.dat > $MAPPINGDIR/idmapping.new.dat
 
 # Adding mols
 
 # DIR of parts
 DIR=$GOADIR/mol
 
-mkdir -p $DIR; cd $DIR; split -l 5000000 ../$INFOFILE.protein $INFOFILE.protein
+mkdir -p $DIR; cd $DIR; split -l 1000000 ../$INFOFILE.protein $INFOFILE.protein
 
-echo "Modify files"
+echo "Preparing MOL files"
 
 for file in $DIR/*
 do
 	echo -e "id\tname\ttype\t" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
 done
 
-echo "CREATE CONSTRAINT ON (n:MOL) ASSERT n.id IS UNIQUE;" > $MOMENTDIR/script
-$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :MOL(name);" > $MOMENTDIR/script 
-$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :MOL(type);" > $MOMENTDIR/script
-$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE CONSTRAINT ON (n:MOL) ASSERT n.id IS UNIQUE;"
+$NEO4JSHELL "CREATE CONSTRAINT ON (n:MOL) ASSERT n.id IS UNIQUE;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX ON :MOL(name);"
+$NEO4JSHELL "CREATE INDEX ON :MOL(name);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX ON :MOL(type);"
+$NEO4JSHELL "CREATE INDEX ON :MOL(type);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
-echo "Neo4j importing"
+echo "Neo4j importing MOL files"
 
 for file in $DIR/*
 do
 	echo $file
-	echo "import-cypher -b 10000 -d\"\t\" -i $file -o $MOMENTDIR/out CREATE (n:MOL { id:{id}, name:{name}, type:{type} })" > $MOMENTDIR/script
-       $NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;"
+    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 cd $GOADIR
@@ -81,32 +71,35 @@ cd $GOADIR
 # DIR of parts
 DIR=$GOADIR/mapping
 
-mkdir -p $DIR; cd $DIR; split -l 5000000 $MAPPINGDIR/idmapping.new.dat idmapping
+mkdir -p $DIR; cd $DIR; split -l 1000000 $MAPPINGDIR/idmapping.new.dat idmapping
 
 
-echo "CREATE CONSTRAINT ON (a:ALIAS) ASSERT a.id IS UNIQUE;" > $MOMENTDIR/script
-$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :ALIAS(source);" > $MOMENTDIR/script 
-$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE CONSTRAINT ON (a:ALIAS) ASSERT a.id IS UNIQUE;"
+$NEO4JSHELL "CREATE CONSTRAINT ON (a:ALIAS) ASSERT a.id IS UNIQUE;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX ON :ALIAS(source);"
+$NEO4JSHELL "CREATE INDEX ON :ALIAS(source);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
-echo "Modify files"
+echo "Preparing ALIAS files"
 for file in $DIR/*
 do
 	echo -e "id\tsource\talias" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
 done
 
-for file in $DIR/*
-do
-	echo $file
-	echo "import-cypher -b 10000 -d\"\t\" -i $file -o $MOMENTDIR/out CREATE (a:ALIAS { id:{alias}, source:{source} })" > $MOMENTDIR/script
-       $NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-done
+echo "Neo4j importing ALIAS files"
 
 for file in $DIR/*
 do
 	echo $file
-	echo "import-cypher -b 10000 -d\"\t\" -i $file -o $MOMENTDIR/out MATCH (c:MOL {id:{id}}), (a:ALIAS {id:{alias}}) CREATE (c)-[:has_alias]->(a)" > $MOMENTDIR/script
-       $NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (a:ALIAS { id: row.alias , source: row.source } ) ;"
+    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (a:ALIAS { id: row.alias , source: row.source } ) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+done
+
+
+for file in $DIR/*
+do
+	echo $file
+	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (a:ALIAS {id:row.alias}) CREATE (c)-[:has_alias]->(a) ;"
+	$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (a:ALIAS {id:row.alias}) CREATE (c)-[:has_alias]->(a) ;" $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 cd $GOADIR
@@ -118,21 +111,21 @@ cut -f 1,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ )
 # DIR of parts
 DIR=$GOADIR/moltaxon
 
-mkdir -p $DIR; cd $DIR; split -l 5000000 ../$INFOFILE.reduced $INFOFILE.reduced
+mkdir -p $DIR; cd $DIR; split -l 1000000 ../$INFOFILE.reduced $INFOFILE.reduced
 
 
 echo "Modify files"
 
 for file in $DIR/*
 do
-	echo -e "id\ttaxon:int" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
+	echo -e "id\ttaxon" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
 done
 
 for file in $DIR/*
 do
 	echo $file
-	echo "import-cypher -b 10000 -d\"\t\" -i $file -o $MOMENTDIR/out MATCH (c:MOL {id:{id}}), (p:TAXID {id:{taxon}}) CREATE (c)-[:has_taxon]->(p)" > $MOMENTDIR/script
-       $NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) CREATE (c)-[:has_taxon]->(p) ;"
+	$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) CREATE (c)-[:has_taxon]->(p) ;"  >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 cd $GOADIR
@@ -146,7 +139,7 @@ cut -f 1,2,3,4,5,6 $GOAFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[0]=~/^U
 #DIR of parts
 DIR=$GOADIR/molgoa
 
-mkdir -p $DIR; cd $DIR; split -l 5000000 ../$GOAFILE.reduced $GOAFILE.reduced
+mkdir -p $DIR; cd $DIR; split -l 1000000 ../$GOAFILE.reduced $GOAFILE.reduced
 
 echo "Modify files"
 
@@ -157,12 +150,12 @@ do
 done
 
 
-echo "CREATE INDEX ON :has_go(evidence);" > $MOMENTDIR/script
-$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :has_go(ref);" > $MOMENTDIR/script
-$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :has_go(qualifier);" > $MOMENTDIR/script
-$NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX ON :has_go(evidence);"
+$NEO4JSHELL "CREATE INDEX ON :has_go(evidence);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX ON :has_go(ref);"
+$NEO4JSHELL "CREATE INDEX ON :has_go(ref);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX ON :has_go(qualifier);"
+$NEO4JSHELL "CREATE INDEX ON :has_go(qualifier);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
 
 echo "Neo4j importing"
@@ -170,8 +163,8 @@ echo "Neo4j importing"
 for file in $DIR/*
 do
 	echo $file
-	echo "import-cypher -b 10000 -d\"\t\" -i $file -o $MOMENTDIR/out MATCH (c:MOL {id:{id}}), (p:GO_TERM {acc:{goacc}}) CREATE (c)-[:has_go { evidence: {evidence}, ref: {ref}, qualifier: {qualifier} }]->(p)" > $MOMENTDIR/script
-       $NEO4JSHELL -file $MOMENTDIR/script >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) CREATE (c)-[:has_go { evidence: row.evidence, ref: row.ref, qualifier: row.qualifier }]->(p) ;"
+    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) CREATE (c)-[:has_go { evidence: row.evidence, ref: row.ref, qualifier: row.qualifier }]->(p) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 cd $GOADIR
