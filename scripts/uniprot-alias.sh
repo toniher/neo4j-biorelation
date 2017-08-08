@@ -11,6 +11,9 @@ SCRIPTPATH=`pwd`
 INFOURL=ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpi.gz
 INFOFILE=goa_uniprot_all.gpi
 GOAFILE=goa_uniprot_all.gpa
+TMPDIR=/data/tmp
+
+export $TMPDIR
 
 mkdir -p $GOADIR
 mkdir -p $MAPPINGDIR
@@ -33,6 +36,40 @@ wget -c -t0 $IDURL
 gunzip *gz
 
 python $SCRIPTPATH/rewrite-IDmapping.py $MAPPINGDIR/idmapping.dat > $MAPPINGDIR/idmapping.new.dat
+
+# Huge processing of Mapping ID
+cut -f 2,3 $MAPPINGDIR/idmapping.new.dat > $MAPPINGDIR/idmapping.pre.dat
+
+DIR=$GOADIR/idmappart
+
+mkdir -p $DIR; cd $DIR; split -l 10000000 $MAPPINGDIR/idmapping.pre.dat idmapping
+
+cd ..
+
+for file in $DIR/*
+do
+    sort -u $file > $file.sort
+done
+
+sort -u -m $DIR/*.sort > $MAPPINGDIR/idmapping.sort.dat
+
+rm -rf $DIR
+
+DIR=$GOADIR/idmappart
+
+mkdir -p $DIR; cd $DIR; split -l 10000000 $MAPPINGDIR/idmapping.new.dat idmapping
+
+cd ..
+
+for file in $DIR/*
+do
+    sort -u $file > $file.sort
+done
+
+sort -u -m $DIR/*.sort > $MAPPINGDIR/idmapping.sort.full.dat
+
+rm -rf $DIR
+
 
 # Adding mols
 
@@ -68,38 +105,54 @@ cd $GOADIR
 
 # Adding alias relationship
 
+
+echo "CREATE INDEX ON :MOLID(id);"
+$NEO4JSHELL "CREATE INDEX ON :MOLID(id);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX ON :MOLID(source);"
+$NEO4JSHELL "CREATE INDEX ON :MOLID(source);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+#echo "CREATE INDEX ON :MOLID(id,source);"
+#$NEO4JSHELL "CREATE INDEX ON :MOLID(id,source);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+
+
 # DIR of parts
-DIR=$GOADIR/mapping
+DIR=$GOADIR/mapimport
 
-mkdir -p $DIR; cd $DIR; split -l 1000000 $MAPPINGDIR/idmapping.new.dat idmapping
+mkdir -p $DIR; cd $DIR; split -l 1000000 $MAPPINGDIR/idmapping.sort.dat idmapping
 
 
-echo "CREATE CONSTRAINT ON (a:ALIAS) ASSERT a.id IS UNIQUE;"
-$NEO4JSHELL "CREATE CONSTRAINT ON (a:ALIAS) ASSERT a.id IS UNIQUE;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :ALIAS(source);"
-$NEO4JSHELL "CREATE INDEX ON :ALIAS(source);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "Preparing MOLID files"
+for file in $DIR/*
+do
+	echo -e "source\talias" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
+done
 
-echo "Preparing ALIAS files"
+echo "Neo4j importing MOLID files"
+
+for file in $DIR/*
+do
+	echo $file
+	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (a:MOLID { id: row.alias , source: row.source } ) ;"
+    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (a:MOLID { id: row.alias , source: row.source } ) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+done
+
+cd $GOADIR
+
+# DIR of parts
+DIR=$GOADIR/map
+
+mkdir -p $DIR; cd $DIR; split -l 1000000 $MAPPINGDIR/idmapping.sort.full.dat idmapping
+
+echo "Preparing MOLID files"
 for file in $DIR/*
 do
 	echo -e "id\tsource\talias" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
 done
 
-echo "Neo4j importing ALIAS files"
-
 for file in $DIR/*
 do
 	echo $file
-	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (a:ALIAS { id: row.alias , source: row.source } ) ;"
-    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (a:ALIAS { id: row.alias , source: row.source } ) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-done
-
-
-for file in $DIR/*
-do
-	echo $file
-	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (a:ALIAS {id:row.alias}) CREATE (c)-[:has_alias]->(a) ;"
-	$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (a:ALIAS {id:row.alias}) CREATE (c)-[:has_alias]->(a) ;" $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (a:MOLID {id:row.alias, source:row.source}) CREATE (c)-[:has_alias]->(a) ;"
+	$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (a:MOLID {id:row.alias, source:row.source}) CREATE (c)-[:has_alias]->(a) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 cd $GOADIR
