@@ -5,8 +5,6 @@ set -ueo pipefail
 NEO4JSHELL=/data/soft/neo4j-community-3.1.5/bin/cypher-shell
 GOAURL=ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpa.gz
 GOADIR=/data/db/go/goa
-IDURL=ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
-MAPPINGDIR=/data/db/go/mapping
 MOMENTDIR=/data/toniher
 SCRIPTPATH=`pwd`
 
@@ -18,7 +16,6 @@ TMPDIR=/data/tmp
 export $TMPDIR
 
 mkdir -p $GOADIR
-mkdir -p $MAPPINGDIR
 
 # Let's uncompress all files
 cd $GOADIR
@@ -33,52 +30,11 @@ cut -f 1,2,3 $INFOFILE.base | perl -F'\t' -lane ' if ($F[2]=~/^protein/ ) { prin
 
 rm $INFOFILE.base
 
-cd $MAPPINGDIR
-wget -c -t0 $IDURL
-gunzip *gz
-
-python $SCRIPTPATH/rewrite-IDmapping.py $MAPPINGDIR/idmapping.dat > $MAPPINGDIR/idmapping.new.dat
-
-# Huge processing of Mapping ID
-cut -f 2,3 $MAPPINGDIR/idmapping.new.dat > $MAPPINGDIR/idmapping.pre.dat
-
-DIR=$GOADIR/idmappart
-
-mkdir -p $DIR; cd $DIR; split -l 10000000 $MAPPINGDIR/idmapping.pre.dat idmapping
-
-cd ..
-
-for file in $DIR/*
-do
-    sort -u $file > $file.sort
-done
-
-sort -u -m $DIR/*.sort > $MAPPINGDIR/idmapping.sort.dat
-
-rm -rf $DIR
-
-DIR=$GOADIR/idmappart
-
-mkdir -p $DIR; cd $DIR; split -l 10000000 $MAPPINGDIR/idmapping.new.dat idmapping
-
-cd ..
-
-for file in $DIR/*
-do
-    sort -u $file > $file.sort
-done
-
-sort -u -m $DIR/*.sort > $MAPPINGDIR/idmapping.sort.full.dat
-
-rm -rf $DIR
-
-
-# Adding mols
-
 # DIR of parts
 DIR=$GOADIR/mol
 
 mkdir -p $DIR; cd $DIR; split -l 1000000 ../$INFOFILE.protein $INFOFILE.protein
+
 
 echo "Preparing MOL files"
 
@@ -103,59 +59,6 @@ do
     $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
-cd $GOADIR
-
-# Adding alias relationship
-
-
-echo "CREATE INDEX ON :MOLID(id);"
-$NEO4JSHELL "CREATE INDEX ON :MOLID(id);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :MOLID(source);"
-$NEO4JSHELL "CREATE INDEX ON :MOLID(source);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-#echo "CREATE INDEX ON :MOLID(id,source);"
-#$NEO4JSHELL "CREATE INDEX ON :MOLID(id,source);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-
-
-# DIR of parts
-DIR=$GOADIR/mapimport
-
-mkdir -p $DIR; cd $DIR; split -l 1000000 $MAPPINGDIR/idmapping.sort.dat idmapping
-
-
-echo "Preparing MOLID files"
-for file in $DIR/*
-do
-	echo -e "source\talias" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
-done
-
-echo "Neo4j importing MOLID files"
-
-for file in $DIR/*
-do
-	echo $file
-	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (a:MOLID { id: row.alias , source: row.source } ) ;"
-    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (a:MOLID { id: row.alias , source: row.source } ) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-done
-
-cd $GOADIR
-
-# DIR of parts
-DIR=$GOADIR/map
-
-mkdir -p $DIR; cd $DIR; split -l 1000000 $MAPPINGDIR/idmapping.sort.full.dat idmapping
-
-echo "Preparing MOLID files"
-for file in $DIR/*
-do
-	echo -e "id\tsource\talias" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
-done
-
-for file in $DIR/*
-do
-	echo $file
-	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (a:MOLID {id:row.alias, source:row.source}) CREATE (c)-[:has_alias]->(a) ;"
-	$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (a:MOLID {id:row.alias, source:row.source}) CREATE (c)-[:has_alias]->(a) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-done
 
 cd $GOADIR
 
@@ -169,7 +72,7 @@ DIR=$GOADIR/moltaxon
 mkdir -p $DIR; cd $DIR; split -l 1000000 ../$INFOFILE.reduced $INFOFILE.reduced
 
 
-echo "Modify files"
+echo "Preparing Taxon Files"
 
 for file in $DIR/*
 do
@@ -186,7 +89,7 @@ done
 cd $GOADIR
 
 rm $INFOFILE.reduced
-
+rm $INFOFILE.protein
 
 # Adding relationships to GO
 cut -f 1,2,3,4,5,6 $GOAFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[0]=~/^UniProt/ ) { print join("\t", @F[1..5]); } '  > $GOAFILE.reduced
@@ -196,7 +99,7 @@ DIR=$GOADIR/molgoa
 
 mkdir -p $DIR; cd $DIR; split -l 1000000 ../$GOAFILE.reduced $GOAFILE.reduced
 
-echo "Modify files"
+echo "Preparing GO files"
 
 for file in $DIR/*
 do
@@ -213,7 +116,7 @@ echo "CREATE INDEX ON :has_go(qualifier);"
 $NEO4JSHELL "CREATE INDEX ON :has_go(qualifier);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
 
-echo "Neo4j importing"
+echo "Neo4j importing GO"
 
 for file in $DIR/*
 do
