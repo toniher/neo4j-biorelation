@@ -224,5 +224,4 @@ done
 
 cd $GOADIR
 
-rm $INFOFILE.reduced
-
+rm $GOAFILE.reduced
