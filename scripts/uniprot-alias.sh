@@ -1,3 +1,5 @@
+set -ueo pipefail
+
 # CONFIG parameters
 
 NEO4JSHELL=/data/soft/neo4j-community-3.1.5/bin/cypher-shell

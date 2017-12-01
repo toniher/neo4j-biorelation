@@ -20,7 +20,7 @@ parser.add_argument("nodes",
 parser.add_argument("names",
                     help="The names.dmp file")
 parser.add_argument("config",
-                    help="JSON configuration file")
+                    help="JSON configuration file", default=None, nargs='*')
 
 opts=parser.parse_args()
 
@@ -29,8 +29,8 @@ conf["host"] = "localhost"
 conf["port"] = 7474
 conf["protocol"] = "http"
 
-if opts.config is not None:
-		with open(opts.config) as json_data_file:
+if len( opts.config ) > 0:	
+        with open(opts.config) as json_data_file:
 				data = json.load(json_data_file)
 				
 				if data.has_key("neo4j"):

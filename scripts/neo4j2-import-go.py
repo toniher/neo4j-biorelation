@@ -21,7 +21,7 @@ parser.add_argument("termdeffile",
 parser.add_argument("term2termfile",
                     help="The term2term.txt file as downloaded from the gene ontology site")
 parser.add_argument("config",
-                    help="JSON configuration file")
+                    help="JSON configuration file", default=None, nargs='*')
 
 opts=parser.parse_args()
 
@@ -30,7 +30,7 @@ conf["host"] = "localhost"
 conf["port"] = 7474
 conf["protocol"] = "http"
 
-if opts.config is not None:
+if len( opts.config ) > 0:
 		with open(opts.config) as json_data_file:
 				data = json.load(json_data_file)
 				
