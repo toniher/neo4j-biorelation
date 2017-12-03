@@ -2,7 +2,7 @@ set -ueo pipefail
 
 # CONFIG parameters
 
-NEO4JSHELL=/data/soft/neo4j-community-3.1.5/bin/cypher-shell
+NEO4JSHELL=/data/soft/neo4j-community-3.3.1/bin/cypher-shell
 GOAURL=ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpa.gz
 GOADIR=/data/db/go/goa
 MOMENTDIR=/data/toniher
@@ -12,8 +12,6 @@ INFOURL=ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpi.gz
 INFOFILE=goa_uniprot_all.gpi
 GOAFILE=goa_uniprot_all.gpa
 TMPDIR=/data/tmp
-
-export $TMPDIR
 
 mkdir -p $GOADIR
 
