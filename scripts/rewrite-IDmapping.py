@@ -30,6 +30,7 @@ def main(argv):
                                                         if count >= chunk :
                                                                 count = 0
                                                                 print string # Print if chunk size higger
+                                                                string = ""
                         print string
 
 if __name__ == "__main__":
