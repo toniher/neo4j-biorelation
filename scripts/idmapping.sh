@@ -19,6 +19,7 @@ wget -c -t0 $IDURL
 gunzip *gz
 
 python $SCRIPTPATH/rewrite-IDmapping.py $MAPPINGDIR/idmapping.dat > $MAPPINGDIR/idmapping.new.dat
+sed -i '/^$/d' $MAPPINGDIR/idmapping.new.dat
 
 # Huge processing of Mapping ID
 cut -f 2,3 $MAPPINGDIR/idmapping.new.dat > $MAPPINGDIR/idmapping.pre.dat
