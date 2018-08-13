@@ -31,8 +31,8 @@ cd $SCRIPTPATH
 
 
 # merge term.txt with term_definition in below
-GONODES=$MOMENTDIR/gonodes.csv
-GORELS=$MOMENTDIR/gorels.csv
+# GONODES=$MOMENTDIR/gonodes.csv
+# GORELS=$MOMENTDIR/gorels.csv
 
 python neo4j2-import-go.py $GODIR/go_weekly-seqdb-tables/term.txt $GODIR/go_weekly-seqdb-tables/term_definition.txt $GODIR/go_weekly-seqdb-tables/term2term.txt
 
