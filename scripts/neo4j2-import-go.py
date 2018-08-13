@@ -1,17 +1,11 @@
 #!/usr/bin/env python
-import py2neo
-from py2neo.packages.httpstream import http
-from multiprocessing import Pool
+from py2neo import Graph, Node, Relationship
 
-import httplib
 import json
 import csv
 import logging
 import argparse
 import pprint
-
-httplib.HTTPConnection._http_vsn = 10
-httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("termfile",
@@ -27,8 +21,8 @@ opts=parser.parse_args()
 
 conf = {}
 conf["host"] = "localhost"
-conf["port"] = 7474
-conf["protocol"] = "http"
+conf["port"] = 7687
+conf["protocol"] = "bolt"
 
 if len( opts.config ) > 0:
 		with open(opts.config) as json_data_file:
@@ -46,12 +40,10 @@ server = conf["protocol"]+"://"+conf["host"]+":"+str( conf["port"] )
 
 logging.basicConfig(level=logging.ERROR)
 
-graph = py2neo.Graph( server+"/db/data/")
+graph = Graph( server )
 
 relationshipmap={}
 definition_list={}
-
-http.socket_timeout = 9999
 
 numiter = 5000
 
@@ -71,7 +63,26 @@ for row in reader:
 	definition_list[str(row[0])] = definition
 
 
-def process_statement( statements ):
+def process_relationship( statements, graph ):
+	
+	tx = graph.begin()
+	
+	#print statements
+	logging.info('proc sent')
+	
+	for statement in statements:
+		#print statement
+		start = graph.nodes.match(statement[0], id=int( statement[1] )).first()
+		end = graph.nodes.match(statement[0], id=int( statement[2] )).first()
+		rel = Relationship( start, statement[3], end )
+		
+		tx.create( rel )
+	
+	tx.process()
+	tx.commit()
+
+
+def process_statement( statements, graph ):
     
     tx = graph.begin()
 
@@ -80,18 +91,14 @@ def process_statement( statements ):
 
     for statement in statements:
         #print statement
-        tx.append(statement)
+        tx.run(statement)
 
     tx.process()
     tx.commit()
 
-poolnum = 4;
-
-p = Pool(poolnum)
 
 def create_go_term(line):
-	if(line[6]=='1'):
-		relationshipmap[line[0]]=line[1]
+	relationshipmap[line[0]]=line[1]
 	goid = line[0]
 	goacc = line[3]
 	gotype = line[2]
@@ -132,7 +139,7 @@ list_statements.append( statements )
 print len( list_statements )
 
 for statements in list_statements :
-	process_statement( statements )
+	process_statement( statements, graph )
 
 
 logging.info('adding relationships')
@@ -145,23 +152,22 @@ statements = []
 
 for row in reader:
 
-    statement = "MATCH (c:"+label+" {id:"+row[3]+"}), (p:"+label+" {id:"+row[2]+"}) CREATE (c)-[:"+relationshipmap[row[1]]+"]->(p)"
-    statements.append( statement )
-
-
-    iter = iter + 1
-    if ( iter > numiter ):
-        list_statements.append( statements )
-        iter = 0
-        statements = []
+	statement = [ label, row[3], row[2], relationshipmap[row[1]] ]
+	statements.append( statement )
+	
+	
+	iter = iter + 1
+	if ( iter > numiter ):
+		list_statements.append( statements )
+		iter = 0
+		statements = []
 
 
 #We force only one worker, fails if relation
-p = Pool(1)
 list_statements.append( statements )
 
 for statements in list_statements :
-	process_statement( statements )
+	process_relationship( statements, graph )
 
 #res = p.map( process_statement, list_statements )
 
