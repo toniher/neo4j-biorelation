@@ -1,18 +1,12 @@
 #!/usr/bin/env python
-import py2neo
-from py2neo.packages.httpstream import http
-from multiprocessing import Pool
+from py2neo import Graph, Node, Relationship
 
-import httplib
 import json
 import csv
 import logging
 import argparse
 import sys
 from pprint import pprint
-
-httplib.HTTPConnection._http_vsn = 10
-httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("nodes",
@@ -26,8 +20,8 @@ opts=parser.parse_args()
 
 conf = {}
 conf["host"] = "localhost"
-conf["port"] = 7474
-conf["protocol"] = "http"
+conf["port"] = 7687
+conf["protocol"] = "bolt"
 
 if len( opts.config ) > 0:	
         with open(opts.config) as json_data_file:
@@ -45,11 +39,9 @@ server = conf["protocol"]+"://"+conf["host"]+":"+str( conf["port"] )
 
 logging.basicConfig(level=logging.ERROR)
 
-http.socket_timeout = 9999
-
 numiter = 5000
 
-graph = py2neo.Graph(server+"/db/data/")
+graph = Graph(server)
 
 label = "TAXID"
 
@@ -60,7 +52,26 @@ names_list={}
 
 idxout = graph.run("CREATE CONSTRAINT ON (n:"+label+") ASSERT n.id IS UNIQUE")
 
-def process_statement( statements ):
+def process_relationship( statements, graph ):
+	
+	tx = graph.begin()
+	
+	#print statements
+	logging.info('proc sent')
+	
+	for statement in statements:
+		#print statement
+		start = graph.nodes.match(statement[0], id=int( statement[1] )).first()
+		end = graph.nodes.match(statement[0], id=int( statement[2] )).first()
+		rel = Relationship( start, statement[3], end )
+		
+		tx.create( rel )
+	
+	tx.process()
+	tx.commit()
+
+
+def process_statement( statements, graph ):
     
     tx = graph.begin()
 
@@ -69,15 +80,11 @@ def process_statement( statements ):
 
     for statement in statements:
         #print statement
-        tx.append(statement)
+        tx.run(statement)
 
     tx.process()
     tx.commit()
 
-
-poolnum = 4;
-
-p = Pool(processes=poolnum)
 
 def create_taxid(line, number):
     taxid = str(line[0]).strip()
@@ -158,37 +165,39 @@ list_statements.append( statements )
 print len( list_statements )
 
 for statements in list_statements :
-	process_statement( statements )
+	process_statement( statements, graph )
 
 # p.map( process_statement, list_statements )
 
 idxout = graph.run("CREATE INDEX ON :"+label+"(rank)")
 
 # We keep no pool for relationship
-tx = graph.begin()
 
 logging.info('adding relationships')
 iter = 0
+
+list_statements =  []
+statements = []
 
 for key in parentid:
 
     parent_taxid = parentid[key]
     
-    statement = "MATCH (c:"+label+" {id:"+str(key)+"}), (p:"+label+" {id:"+str(parent_taxid)+"}) CREATE (c)-[:has_parent]->(p)"
-    #print statement
-
-    tx.append(statement)
-
+    
+    statement = [ label, key, parent_taxid, "has_parent" ]
+    statements.append( statement )
+    
     iter = iter + 1
     if ( iter > numiter ):
-        tx.process()
-        tx.commit()
-        tx = graph.begin()
-        
+        list_statements.append( statements )
         iter = 0
+        statements = []
 
-tx.process()
-tx.commit()
+list_statements.append( statements )
+
+
+for statements in list_statements :
+	process_relationship( statements, graph )
 
 idxout = graph.run("CREATE INDEX ON :"+label+"(scientific_name)")
 idxout = graph.run("CREATE INDEX ON :"+label+"(name)")
