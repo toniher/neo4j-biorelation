@@ -49,7 +49,7 @@ python generateGOrels.py $GODIR/go_weekly-seqdb-tables/term.txt $GODIR/go_weekly
 
 #python importGOrels.py $GODIR/go_weekly-seqdb-tables/term.txt $GODIR/go_weekly-seqdb-tables/term2term.txt
 
-echo "LOAD CSV WITH HEADERS FROM \"file://${GORELS}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:GO_TERM { id:toInt( row.target )} ), (p:GO_TERM { id:toInt( row.source ) } ) CREATE (c)-[:row.rel]->(p) call apoc.merge.relationship(c,row.rel,{},{},p) yield rel return count(*) ;"
+echo "LOAD CSV WITH HEADERS FROM \"file://${GORELS}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:GO_TERM { id:toInt( row.target )} ), (p:GO_TERM { id:toInt( row.source ) } ) call apoc.merge.relationship(c,row.rel,{},{},p) yield rel return count(*) ;"
 
 $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${GORELS}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:GO_TERM { id:toInt( row.target )} ), (p:GO_TERM { id:toInt( row.source ) } ) call apoc.merge.relationship(c,row.rel,{},{},p) yield rel return count(*) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
