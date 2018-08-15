@@ -39,7 +39,7 @@ server = conf["protocol"]+"://"+conf["host"]+":"+str( conf["port"] )
 
 logging.basicConfig(level=logging.ERROR)
 
-numiter = 5000
+numiter = 10000
 
 graph = Graph(server)
 
@@ -196,8 +196,8 @@ for key in parentid:
 list_statements.append( statements )
 
 
-for statements in list_statements :
-	process_relationship( statements, graph )
+#for statements in list_statements :
+#	process_relationship( statements, graph )
 
-idxout = graph.run("CREATE INDEX ON :"+label+"(scientific_name)")
-idxout = graph.run("CREATE INDEX ON :"+label+"(name)")
+#idxout = graph.run("CREATE INDEX ON :"+label+"(scientific_name)")
+#idxout = graph.run("CREATE INDEX ON :"+label+"(name)")
