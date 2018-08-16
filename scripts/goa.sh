@@ -2,7 +2,7 @@ set -ueo pipefail
 
 # CONFIG parameters
 
-NEO4JSHELL=/data/soft/neo4j-community-3.3.1/bin/cypher-shell
+NEO4JSHELL=/data/soft/neo4j-community-3.4.5/bin/cypher-shell
 GOAURL=ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpa.gz
 GOADIR=/data/db/go/goa
 MOMENTDIR=/data/toniher
@@ -17,16 +17,13 @@ mkdir -p $GOADIR
 
 # Let's uncompress all files
 cd $GOADIR
-wget -c -t0 $GOAURL
-wget -c -t0 $INFOURL
-gunzip *gz
+#wget -c -t0 $GOAURL
+#wget -c -t0 $INFOURL
+#gunzip *gz
 
 # Base entries
-cut -f 1,3,5,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { $F[1]=~s/\"/\\"/g; print join( "\t", @F[0..2] ); } ' > $INFOFILE.base
-# We skip interaction stuff for now
-cut -f 1,2,3 $INFOFILE.base | perl -F'\t' -lane ' if ($F[2]=~/^protein/ ) { print $_; } ' > $INFOFILE.protein
-
-rm $INFOFILE.base
+# cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { $F[1]=~s/\"/\\"/g; print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
+cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
 
 # DIR of parts
 DIR=$GOADIR/mol
@@ -62,7 +59,7 @@ cd $GOADIR
 
 
 # Adding relationships to Taxon
-cut -f 1,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ ) { my $id=$F[0]; my $tax=$F[1]; $tax=~s/taxon\://g; print $id, "\t", $tax; } ' > $INFOFILE.reduced
+cut -f 2,7 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ ) { my $id=$F[0]; my $tax=$F[1]; $tax=~s/taxon\://g; print $id, "\t", $tax; } ' > $INFOFILE.reduced
 
 # DIR of parts
 DIR=$GOADIR/moltaxon
@@ -90,7 +87,7 @@ rm $INFOFILE.reduced
 rm $INFOFILE.protein
 
 # Adding relationships to GO
-cut -f 1,2,3,4,5,6 $GOAFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[0]=~/^UniProt/ ) { print join("\t", @F[1..5]); } '  > $GOAFILE.reduced
+cut -f 2,3,4,5,6 $GOAFILE  > $GOAFILE.reduced
 
 #DIR of parts
 DIR=$GOADIR/molgoa
