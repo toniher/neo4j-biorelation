@@ -74,9 +74,9 @@ if [ "$1" == "neo4j" ]; then
         NEO4J_dbms_directories_logs="/logs"
     fi
 
-    if [ -d /import ]; then
+    #if [ -d /import ]; then
        # NEO4J_dbms_directories_import="/import" Commented -> No restriction for importing
-    fi
+    #fi
 
     if [ -d /metrics ]; then
         NEO4J_dbms_directories_metrics="/metrics"
