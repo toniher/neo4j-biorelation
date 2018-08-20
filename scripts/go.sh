@@ -4,13 +4,11 @@ set -ueo pipefail
 
 # CONFIG parameters
 
-NEO4JSHELL=/data/soft/neo4j-community-3.4.5/bin/cypher-shell
-GOURL=http://archive.geneontology.org/latest-lite/go_weekly-seqdb-tables.tar.gz
-GODIR=/data/db/go/
-MOMENTDIR=/data/toniher
-SCRIPTPATH=`pwd`
+set -a 
 
-TMPDIR=/data/tmp
+. ./vars.sh
+
+set +a
 
 
 cd $GODIR
