@@ -14,7 +14,7 @@ mkdir -p $MOMENTDIR
 mkdir -p $TMPDIR
 
 ./go.sh
-#./taxonomy.sh
-#./goa.sh
+./taxonomy.sh
+./goa.sh
 
 

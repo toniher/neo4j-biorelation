@@ -37,16 +37,18 @@ RUN cd neo4j-biorelation; mvn clean package
 RUN cp neo4j-biorelation/target/neo4j-biorelation-$NEO4J_BIORELATION_VERSION.jar $NEO4J_PATH/plugins
 
 # APOC
-RUN cd $NEO4J_PATH/plugins;
-RUN curl --fail --silent --show-error --location --remote-name https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/${NEO4J_APOC_VERSION}/apoc-${NEO4J_APOC_VERSION}-all.jar
+RUN cd $NEO4J_PATH/plugins; curl --silent --show-error --location --remote-name https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/${NEO4J_APOC_VERSION}/apoc-${NEO4J_APOC_VERSION}-all.jar
 
 # Install JSON minimal
-RUN cd $NEO4J_PATH/lib; curl --fail --silent --show-error --location --remote-name http://central.maven.org/maven2/com/eclipsesource/minimal-json/minimal-json/${MINIMAL_JSON_VERSION}/minimal-json-${MINIMAL_JSON_VERSION}.jar 
+RUN cd $NEO4J_PATH/lib; curl --silent --show-error --location --remote-name http://central.maven.org/maven2/com/eclipsesource/minimal-json/minimal-json/${MINIMAL_JSON_VERSION}/minimal-json-${MINIMAL_JSON_VERSION}.jar 
 
 WORKDIR $NEO4J_PATH
 
 # Volume from where to import files
 VOLUME /scratch
+
+# Ensure always work LOAD CSV
+RUN cd import; ln -s /scratch .
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 

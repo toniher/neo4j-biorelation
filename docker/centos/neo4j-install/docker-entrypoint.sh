@@ -37,12 +37,17 @@ if [ "$1" == "neo4j" ]; then
     : ${NEO4J_ha_host_coordination:="$(hostname):5001"}
     : ${NEO4J_ha_host_data:="$(hostname):6001"}
 
-	# Variables specific to Neo4j-biorelation
-	: ${NEO4J_dbms_security_auth__enabled:="false"}
-	: ${NEO4J_dbms_shell_enabled:="true"}
-	: ${NEO4J_dbms_shell_host:="0.0.0.0"}
-	: ${NEO4J_dbms_unmanaged__extension__classes:="cat.cau.neo4j.biorelation.rest=/biodb"}
+    # Variables specific to Neo4j-biorelation
+    : ${NEO4J_dbms_security_auth__enabled:="false"}
+    : ${NEO4J_dbms_shell_enabled:="true"}
+    : ${NEO4J_dbms_shell_host:="0.0.0.0"}
+    : ${NEO4J_dbms_unmanaged__extension__classes:="cat.cau.neo4j.biorelation.rest=/biodb"}
 
+    # Variables for APOC
+    : ${NEO4J_apoc_import_file_enabled:="true"}
+    
+    # Import Directory
+    # : ${NEO4J_dbms_directories_import:="/scratch"}
 
     # unset old hardcoded unsupported env variables
     unset NEO4J_dbms_txLog_rotation_retentionPolicy NEO4J_UDC_SOURCE \
@@ -75,7 +80,7 @@ if [ "$1" == "neo4j" ]; then
     fi
 
     #if [ -d /import ]; then
-       # NEO4J_dbms_directories_import="/import" Commented -> No restriction for importing
+    #   NEO4J_dbms_directories_import="/import"
     #fi
 
     if [ -d /metrics ]; then
