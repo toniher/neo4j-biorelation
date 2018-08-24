@@ -30,25 +30,6 @@ if [ "$1" == "neo4j" ]; then
     : ${NEO4J_causal__clustering_raft__listen__address:=${NEO4J_causalClustering_raftListenAddress:-"0.0.0.0:7000"}}
     : ${NEO4J_causal__clustering_raft__advertised__address:=${NEO4J_causalClustering_raftAdvertisedAddress:-"$(hostname):7000"}}
 
-    : ${NEO4J_dbms_connectors_default__listen__address:="0.0.0.0"}
-    : ${NEO4J_dbms_connector_http_listen__address:="0.0.0.0:7474"}
-    : ${NEO4J_dbms_connector_https_listen__address:="0.0.0.0:7473"}
-    : ${NEO4J_dbms_connector_bolt_listen__address:="0.0.0.0:7687"}
-    : ${NEO4J_ha_host_coordination:="$(hostname):5001"}
-    : ${NEO4J_ha_host_data:="$(hostname):6001"}
-
-    # Variables specific to Neo4j-biorelation
-    : ${NEO4J_dbms_security_auth__enabled:="false"}
-    : ${NEO4J_dbms_shell_enabled:="true"}
-    : ${NEO4J_dbms_shell_host:="0.0.0.0"}
-    : ${NEO4J_dbms_unmanaged__extension__classes:="cat.cau.neo4j.biorelation.rest=/biodb"}
-
-    # Variables for APOC
-    : ${NEO4J_apoc_import_file_enabled:="true"}
-    
-    # Import Directory
-    # : ${NEO4J_dbms_directories_import:="/scratch"}
-
     # unset old hardcoded unsupported env variables
     unset NEO4J_dbms_txLog_rotation_retentionPolicy NEO4J_UDC_SOURCE \
         NEO4J_dbms_memory_heap_maxSize NEO4J_dbms_memory_heap_maxSize \
@@ -62,6 +43,34 @@ if [ "$1" == "neo4j" ]; then
         NEO4J_causalClustering_transactionAdvertisedAddress \
         NEO4J_causalClustering_raftListenAddress \
         NEO4J_causalClustering_raftAdvertisedAddress
+
+    # Custom settings for dockerized neo4j
+    : ${NEO4J_dbms_tx__log_rotation_retention__policy:=100M size}
+    : ${NEO4J_dbms_memory_pagecache_size:=1024M}
+    : ${NEO4J_wrapper_java_additional:=-Dneo4j.ext.udc.source=docker}
+    : ${NEO4J_dbms_memory_heap_initial__size:=1024M}
+    : ${NEO4J_dbms_memory_heap_max__size:=4096M}
+    : ${NEO4J_dbms_connectors_default__listen__address:=0.0.0.0}
+    : ${NEO4J_dbms_connector_http_listen__address:=0.0.0.0:7474}
+    : ${NEO4J_dbms_connector_https_listen__address:=0.0.0.0:7473}
+    : ${NEO4J_dbms_connector_bolt_listen__address:=0.0.0.0:7687}
+    : ${NEO4J_ha_host_coordination:=$(hostname):5001}
+    : ${NEO4J_ha_host_data:=$(hostname):6001}
+    : ${NEO4J_causal__clustering_discovery__listen__address:=0.0.0.0:5000}
+    : ${NEO4J_causal__clustering_discovery__advertised__address:=$(hostname):5000}
+    : ${NEO4J_causal__clustering_transaction__listen__address:=0.0.0.0:6000}
+    : ${NEO4J_causal__clustering_transaction__advertised__address:=$(hostname):6000}
+    : ${NEO4J_causal__clustering_raft__listen__address:=0.0.0.0:7000}
+    : ${NEO4J_causal__clustering_raft__advertised__address:=$(hostname):7000}
+
+    # Variables specific to Neo4j-biorelation
+    : ${NEO4J_dbms_security_auth__enabled:="false"}
+    : ${NEO4J_dbms_shell_enabled:="true"}
+    : ${NEO4J_dbms_shell_host:="0.0.0.0"}
+    : ${NEO4J_dbms_unmanaged__extension__classes:="cat.cau.neo4j.biorelation.rest=/biodb"}
+
+    # Variables for APOC
+    : ${NEO4J_apoc_import_file_enabled:="true"}
 
     if [ -d /conf ]; then
         find /conf -type f -exec cp {} conf \;
