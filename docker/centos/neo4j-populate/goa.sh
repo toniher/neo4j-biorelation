@@ -44,8 +44,10 @@ echo "Neo4j importing MOL files"
 for file in $DIR/*
 do
 	echo $file
-	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;"
-    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	#echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;"
+	echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'\t', header:true } } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, iterateList:true, parallel:true});" 
+    #$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'\t', header:true } } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, iterateList:true, parallel:true});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 
@@ -58,7 +60,7 @@ cut -f 2,7 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ )
 # DIR of parts
 DIR=$GOADIR/moltaxon
 
-mkdir -p $DIR; cd $DIR; split -l 1000000 ../$INFOFILE.reduced $INFOFILE.reduced
+mkdir -p $DIR; cd $DIR; split -l 100000 ../$INFOFILE.reduced $INFOFILE.reduced
 
 
 echo "Preparing Taxon Files"
@@ -71,8 +73,10 @@ done
 for file in $DIR/*
 do
 	echo $file
-	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) CREATE (c)-[:has_taxon]->(p) ;"
-	$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) CREATE (c)-[:has_taxon]->(p) ;"  >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	# echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) CREATE (c)-[:has_taxon]->(p) ;"
+	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,has_taxon,{},{},p) yield rel return count(*) ;" 
+	#$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) CREATE (c)-[:has_taxon]->(p) ;"  >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,has_taxon,{},{},p) yield rel return count(*) ;"  >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 cd $GOADIR
@@ -86,7 +90,7 @@ cut -f 2,3,4,5,6 $GOAFILE  > $GOAFILE.reduced
 #DIR of parts
 DIR=$GOADIR/molgoa
 
-mkdir -p $DIR; cd $DIR; split -l 1000000 ../$GOAFILE.reduced $GOAFILE.reduced
+mkdir -p $DIR; cd $DIR; split -l 100000 ../$GOAFILE.reduced $GOAFILE.reduced
 
 echo "Preparing GO files"
 
@@ -110,8 +114,10 @@ echo "Neo4j importing GO"
 for file in $DIR/*
 do
 	echo $file
-	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) CREATE (c)-[:has_go { evidence: row.evidence, ref: row.ref, qualifier: row.qualifier }]->(p) ;"
-    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) CREATE (c)-[:has_go { evidence: row.evidence, ref: row.ref, qualifier: row.qualifier }]->(p) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	#echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) CREATE (c)-[:has_go { evidence: row.evidence, ref: row.ref, qualifier: row.qualifier }]->(p) ;"
+	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,has_go,{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) ;"
+    #$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) CREATE (c)-[:has_go { evidence: row.evidence, ref: row.ref, qualifier: row.qualifier }]->(p) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,has_go,{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 cd $GOADIR
