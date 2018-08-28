@@ -23,6 +23,6 @@ TMPDIR=/scratch/tmp
 
 # Docker populate vars
 SCRATCHDIR=/scratch/neo4j
-DOCKERNAME=myneo4j
+DOCKERNAME=neo4jbio
 
 

@@ -1,23 +1,34 @@
-FROM biocorecrg/centos-perlbrew-pyenv-java:centos7
+FROM openjdk:8-jdk-alpine
 
 ARG NEO4J_VERSION=3.4.5
 ARG NEO4J_BIORELATION_VERSION=0.2.3
 ARG NEO4J_APOC_VERSION=3.4.0.2
 ARG MINIMAL_JSON_VERSION=0.9.5
-ENV NEO4J_SHA256=af53823776645e11d04436a513368e7e417b515572d6228da6b2977c8490ffbb
-ENV NEO4J_PATH /var/lib/neo4j
+
+ARG MAVEN_VERSION=3.5.4
+ARG MAVEN_SHA=ce50b1c91364cb77efe3776f756a6d92b76d9038b0a0782f7d53acf1e997a14d
+ARG MAVEN_BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
+
+ENV NEO4J_PATH=/var/lib/neo4j
+
+# RUN addgroup -S neo4j && adduser -S -H -h /var/lib/neo4j -G neo4j neo4j
 
 # Install Neo4j
 # From official Neo4j
 
 ENV NEO4J_TARBALL=neo4j-community-${NEO4J_VERSION}-unix.tar.gz
 ARG NEO4J_URI=http://dist.neo4j.org/neo4j-community-${NEO4J_VERSION}-unix.tar.gz
+ENV NEO4J_SHA256=af53823776645e11d04436a513368e7e417b515572d6228da6b2977c8490ffbb
+
+RUN apk add --no-cache curl
 
 RUN curl --fail --silent --show-error --location --remote-name ${NEO4J_URI} \
-    && echo "${NEO4J_SHA256}  ${NEO4J_TARBALL}" | sha256sum --status -cw - \
+    && echo "${NEO4J_SHA256}  ${NEO4J_TARBALL}" | sha256sum -csw - \
     && tar --extract --file ${NEO4J_TARBALL} --directory /var/lib \
     && mv /var/lib/neo4j-* /var/lib/neo4j \
     && rm ${NEO4J_TARBALL}
+
+ENV PATH $NEO4J_PATH/bin:$PATH
 
 WORKDIR $NEO4J_PATH
 
@@ -30,6 +41,15 @@ VOLUME /data
 ENV NEO4J_SHELL_BASE /tmp
 
 WORKDIR $NEO4J_SHELL_BASE
+
+RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
+  && curl -fsSL -o /tmp/apache-maven.tar.gz ${MAVEN_BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
+  && echo "${MAVEN_SHA}  /tmp/apache-maven.tar.gz" | sha256sum -c - \
+  && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
+  && rm -f /tmp/apache-maven.tar.gz \
+&& ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+
+RUN apk add --no-cache git
 
 # Install Neo4j Biorelation
 RUN git clone https://github.com/toniher/neo4j-biorelation
@@ -52,10 +72,15 @@ RUN cd import; ln -s /scratch .
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-# Installing Python libraries
-RUN pip install neobolt py2neo
-
 EXPOSE 7474 7473 7687 1337
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+RUN apk add --no-cache tini su-exec bash python-dev py-pip build-base
+RUN apk add --no-cache libffi-dev openssl-dev
+
+RUN pip install neobolt py2neo
+
+ENV NEO4J_EDITION=community
+
+ENTRYPOINT ["/sbin/tini", "-g", "--", "/docker-entrypoint.sh"]
+
 CMD ["neo4j"]

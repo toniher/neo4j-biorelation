@@ -38,8 +38,8 @@ python generateGOnodes.py $GODIR/go_weekly-seqdb-tables/term.txt $GODIR/go_weekl
 
 # Using APOC
 
-echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${GONODES}', { sep:'\t', header:true, mapping:{id:{type:'int'} } } ) yield map as row return row\",\"CREATE (p:GO_TERM) SET p = row\",{batchSize:10000, iterateList:true, parallel:true});"
-$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${GONODES}', { sep:'\t', header:true, mapping:{id:{type:'int'} } } ) yield map as row return row\",\"CREATE (p:GO_TERM) SET p = row\",{batchSize:10000, iterateList:true, parallel:true});"
+echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${GONODES}', { sep:'\t', header:true, mapping:{id:{type:'int'} } } ) yield map as row return row\",\"CREATE (p:GO_TERM) SET p = row\",{batchSize:10000, retries: 5, iterateList:true, parallel:true});"
+$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${GONODES}', { sep:'\t', header:true, mapping:{id:{type:'int'} } } ) yield map as row return row\",\"CREATE (p:GO_TERM) SET p = row\",{batchSize:10000, retries: 5, iterateList:true, parallel:true});"
 
 
 # replace term2term.txt to a version with 3 column and with rel replaced with its name version

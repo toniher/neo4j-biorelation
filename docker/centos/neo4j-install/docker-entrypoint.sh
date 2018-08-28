@@ -14,8 +14,8 @@ if [ "$1" == "neo4j" ]; then
     # Set some to default values if unset
     : ${NEO4J_dbms_tx__log_rotation_retention__policy:=${NEO4J_dbms_txLog_rotation_retentionPolicy:-"100M size"}}
     : ${NEO4J_wrapper_java_additional:=${NEO4J_UDC_SOURCE:-"-Dneo4j.ext.udc.source=docker"}}
-    : ${NEO4J_dbms_memory_heap_initial__size:=${NEO4J_dbms_memory_heap_maxSize:-"18G"}}
-    : ${NEO4J_dbms_memory_heap_max__size:=${NEO4J_dbms_memory_heap_maxSize:-"18G"}}
+    : ${NEO4J_dbms_memory_heap_initial__size:=${NEO4J_dbms_memory_heap_maxSize:-"24G"}}
+    : ${NEO4J_dbms_memory_heap_max__size:=${NEO4J_dbms_memory_heap_maxSize:-"24G"}}
     : ${NEO4J_dbms_unmanaged__extension__classes:=${NEO4J_dbms_unmanagedExtensionClasses:-}}
     : ${NEO4J_dbms_allow__format__migration:=${NEO4J_dbms_allowFormatMigration:-}}
     : ${NEO4J_dbms_connectors_default__advertised__address:=${NEO4J_dbms_connectors_defaultAdvertisedAddress:-}}
@@ -46,10 +46,10 @@ if [ "$1" == "neo4j" ]; then
 
     # Custom settings for dockerized neo4j
     : ${NEO4J_dbms_tx__log_rotation_retention__policy:=100M size}
-    : ${NEO4J_dbms_memory_pagecache_size:=18G}
+    : ${NEO4J_dbms_memory_pagecache_size:=24G}
     : ${NEO4J_wrapper_java_additional:=-Dneo4j.ext.udc.source=docker}
-    : ${NEO4J_dbms_memory_heap_initial__size:=18G}
-    : ${NEO4J_dbms_memory_heap_max__size:=20G}
+    : ${NEO4J_dbms_memory_heap_initial__size:=24G}
+    : ${NEO4J_dbms_memory_heap_max__size:=36G}
     : ${NEO4J_dbms_connectors_default__listen__address:=0.0.0.0}
     : ${NEO4J_dbms_connector_http_listen__address:=0.0.0.0:7474}
     : ${NEO4J_dbms_connector_https_listen__address:=0.0.0.0:7473}
