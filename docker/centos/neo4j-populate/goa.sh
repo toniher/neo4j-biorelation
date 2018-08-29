@@ -73,10 +73,9 @@ done
 for file in $DIR/*
 do
 	echo $file
-	# echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) CREATE (c)-[:has_taxon]->(p) ;"
-	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,has_taxon,{},{},p) yield rel return count(*) ;" 
-	#$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) CREATE (c)-[:has_taxon]->(p) ;"  >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-	$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,has_taxon,{},{},p) yield rel return count(*) ;"  >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	
+	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,'has_taxon',{},{},p) yield rel return count(*)\",{batchSize:1000, retries: 5, iterateList:true, parallel:false});"
+	$NEO4JSHELL "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,'has_taxon',{},{},p) yield rel return count(*)\",{batchSize:1000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 cd $GOADIR
@@ -114,10 +113,8 @@ echo "Neo4j importing GO"
 for file in $DIR/*
 do
 	echo $file
-	#echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) CREATE (c)-[:has_go { evidence: row.evidence, ref: row.ref, qualifier: row.qualifier }]->(p) ;"
-	echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,has_go,{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) ;"
-    #$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) CREATE (c)-[:has_go { evidence: row.evidence, ref: row.ref, qualifier: row.qualifier }]->(p) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-    $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,has_go,{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,'has_go',{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) yield rel return count(*) \",{batchSize:1000, retries: 5, iterateList:true, parallel:false});"
+	$NEO4JSHELL "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,'has_go',{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) yield rel return count(*) \",{batchSize:1000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 cd $GOADIR

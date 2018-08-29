@@ -38,8 +38,9 @@ python neo4j2-import-ncbi.py $TAXDIR/nodes.dmp $TAXDIR/names.dmp
 #$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${TAXNODES}', { sep:'\t', header:true, mapping:{id:{type:'int'}, name:{array:true,arraySep:'?'} } } ) yield map as row return row\",\"CREATE (p:TAXID) SET p = row\",{batchSize:10000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
 
-#echo "LOAD CSV WITH HEADERS FROM \"file://${TAXRELS}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:TAXID { id:toInt( row.start )} ), (p:TAXID { id:toInt( row.end ) } ) call apoc.merge.relationship(c,row.rel,{},{},p) yield rel return count(*) ;"
-#$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${TAXRELS}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:TAXID { id:toInt( row.start )} ), (p:TAXID { id:toInt( row.end ) } ) call apoc.merge.relationship(c,row.rel,{},{},p) yield rel return count(*) ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+#echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${TAXRELS}', { sep:'\t', header:true } ) yield map as row return row\",\"MATCH (c:TAXID { id:toInt( row.start )} ), (p:TAXID { id:toInt( row.end ) } ) call apoc.merge.relationship(c,row.rel,{},{},p) \",{batchSize:1000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+
+#NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${TAXRELS}', { sep:'\t', header:true } ) yield map as row return row\",\"MATCH (c:TAXID { id:toInt( row.start )} ), (p:TAXID { id:toInt( row.end ) } ) call apoc.merge.relationship(c,row.rel,{},{},p) \",{batchSize:1000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
 
 #echo "CREATE INDEX ON :TAXID(rank)"
