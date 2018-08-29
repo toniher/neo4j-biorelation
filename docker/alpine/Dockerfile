@@ -70,14 +70,16 @@ VOLUME /scratch
 # Ensure always work LOAD CSV
 RUN cd import; ln -s /scratch .
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-
 EXPOSE 7474 7473 7687 1337
 
 RUN apk add --no-cache tini su-exec bash python-dev py-pip build-base
 RUN apk add --no-cache libffi-dev openssl-dev
 
 RUN pip install neobolt py2neo
+
+RUN apk add --no-cache perl
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 ENV NEO4J_EDITION=community
 

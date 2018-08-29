@@ -29,7 +29,7 @@ echo "Preparing MOL files"
 
 for file in $DIR/*
 do
-	echo -e "id\tname\ttype\t" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
+	echo -e "id\tname\ttype" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
 done
 
 echo "CREATE CONSTRAINT ON (n:MOL) ASSERT n.id IS UNIQUE;"
@@ -45,9 +45,9 @@ for file in $DIR/*
 do
 	echo $file
 	#echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;"
-	echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'\t', header:true } } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, iterateList:true, parallel:false});" 
+	echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, retries: 5, iterateList:true, parallel:false});" 
     #$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-	$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'\t', header:true } } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 
