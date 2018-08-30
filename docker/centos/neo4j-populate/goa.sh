@@ -84,7 +84,8 @@ rm $INFOFILE.reduced
 rm $INFOFILE.protein
 
 # Adding relationships to GO
-cut -f 2,3,4,5,6 $GOAFILE  > $GOAFILE.reduced
+cut -f 2,3,4,5,6 $GOAFILE  | perl -F'\t' -lane ' if ($F[0]!~/^(\!|gpa-)/ ) { print join( "\t", @F[0..4] ); } ' > $GOAFILE.reduced
+
 
 #DIR of parts
 DIR=$GOADIR/molgoa
