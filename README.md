@@ -73,3 +73,6 @@ We provide data population scripts at ```population``` directory for sake of con
             (a:annotation)-[has_evidence]-(e:ECO_TERM)
             (a:annotation)-[has_goref]-(r:GOREF_TERM)
 
+    * ECO: https://www.ebi.ac.uk/ols/ontologies/eco
+    * GO_REF: http://www.geneontology.org/cgi-bin/references.cgi
+
