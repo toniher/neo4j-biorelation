@@ -15,6 +15,6 @@ mkdir -p $TMPDIR
 
 ./go.sh
 ./taxonomy.sh
-#./goa.sh
+./goa.sh
 
 
