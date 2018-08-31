@@ -65,9 +65,11 @@ We provide data population scripts at ```population``` directory for sake of con
 
 
 * Make tests work.
-
 * root working in all cases
 * Dealing with exceptions
+* Consider migrating goa.sh last step
 
-
+    (m:MOL)-[has_annotation]-(a:annotation)-[has_go]-(g:GO_TERM)
+            (a:annotation)-[has_evidence]-(e:ECO_TERM)
+            (a:annotation)-[has_goref]-(r:GOREF_TERM)
 
