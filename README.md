@@ -42,6 +42,16 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
 	* curl http://localhost:7474/biodb/rels/go/Q96IY4 -> GO information about Q96IY4
 	* curl http://localhost:7474/biodb/rels/tax/Q96IY4 -> Taxon information about Q96IY4
 
+## Docker
+
+* [Alpine version](https://hub.docker.com/r/toniher/neo4j-biorelation-alpine/)
+
+
+## Data population scripts
+
+We provide data population scripts at ```population``` directory for sake of convenience. They are compatible with provided Docker versions.
+
+
 ## TODO
 
 * Simplify functions
