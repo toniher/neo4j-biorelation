@@ -15,8 +15,8 @@ cd $GODIR
 
 curl --fail --silent --show-error --location --remote-name $GOURL
 
-tar zxf go_weekly-seqdb-tables.tar.gz
-rm go_weekly-seqdb-tables.tar.gz
+tar zxf go_weekly-assocdb-tables.tar.gz
+rm go_weekly-assocdb-tables.tar.gz
 
 cd $SCRIPTPATH
 
@@ -31,7 +31,7 @@ GONODES=$MOMENTDIR/gonodes.csv
 GORELS=$MOMENTDIR/gorels.csv
 
 # Prepare nodes
-python generateGOnodes.py $GODIR/go_weekly-seqdb-tables/term.txt $GODIR/go_weekly-seqdb-tables/term_definition.txt > $GONODES
+python generateGOnodes.py $GODIR/go_weekly-assocdb-tables/term.txt $GODIR/go_weekly-assocdb-tables/term_definition.txt > $GONODES
 
 # echo "LOAD CSV WITH HEADERS FROM \"file://${GONODES}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:GO_TERM) SET n = row ;"
 # $NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${GONODES}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:GO_TERM) SET n = row ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
@@ -43,9 +43,9 @@ $NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${GONODES}', { sep
 
 
 # replace term2term.txt to a version with 3 column and with rel replaced with its name version
-python generateGOrels.py $GODIR/go_weekly-seqdb-tables/term.txt $GODIR/go_weekly-seqdb-tables/term2term.txt > $GORELS
+python generateGOrels.py $GODIR/go_weekly-assocdb-tables/term.txt $GODIR/go_weekly-assocdb-tables/term2term.txt > $GORELS
 
-#python importGOrels.py $GODIR/go_weekly-seqdb-tables/term.txt $GODIR/go_weekly-seqdb-tables/term2term.txt
+#python importGOrels.py $GODIR/go_weekly-assocdb-tables/term.txt $GODIR/go_weekly-assocdb-tables/term2term.txt
 
 echo "LOAD CSV WITH HEADERS FROM \"file://${GORELS}\" AS row FIELDTERMINATOR \"\t\" MATCH (c:GO_TERM { id:toInt( row.target )} ), (p:GO_TERM { id:toInt( row.source ) } ) call apoc.merge.relationship(c,row.rel,{},{},p) yield rel return count(*) ;"
 

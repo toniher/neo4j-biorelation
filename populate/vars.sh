@@ -2,7 +2,7 @@
 NEO4JSHELL=/var/lib/neo4j/bin/cypher-shell
 
 # GO URLs
-GOURL=http://archive.geneontology.org/latest-lite/go_weekly-seqdb-tables.tar.gz
+GOURL=http://archive.geneontology.org/latest-lite/go_weekly-assocdb-tables.tar.gz
 GODIR=/scratch/go/
 
 # Taxonomy URLs
