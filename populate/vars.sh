@@ -19,7 +19,7 @@ GOAFILE=goa_uniprot_all.gpa
 # IDmapping URL
 IDMAPURL=ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
 IDMAPDIR=/scratch/idmapping
-IDMAPFILEPATH=/path/to/processed/idmapping.new
+IDMAPFILEPATH=/scratch/idmappingall.csv
 
 # Temp dirs
 MOMENTDIR=/scratch/moment
