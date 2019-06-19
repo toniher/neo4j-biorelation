@@ -20,7 +20,7 @@ mkdir -p $IDMAPDIR
 # DIR of parts
 DIR=$IDMAPDIR/id
 
-mkdir -p $DIR; cd $DIR; split -l 10000000 $IDMAPFILEPATH idmap
+mkdir -p $DIR; cd $DIR; split -l 5000000 $IDMAPFILEPATH idmap
 
 
 echo "Preparing ID files"
@@ -49,7 +49,7 @@ for file in $DIR/*
 do
 	echo $file
 	
-	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (n:XREF {id:row.xref }) call apoc.merge.relationship(c,'has_xref',{},{},p) yield rel return count(*)\",{batchSize:2500, retries: 5, iterateList:true, parallel:false});"
+	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (n:XREF {id:row.xref }) call apoc.merge.relationship(c,'has_xref',{},{},n) yield rel return count(*)\",{batchSize:2500, retries: 5, iterateList:true, parallel:false});"
 	$NEO4JSHELL "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (n:XREF {id:row.xref}) call apoc.merge.relationship(c,'has_xref',{},{},n) yield rel return count(*)\",{batchSize:2500, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
