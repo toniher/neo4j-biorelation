@@ -7,7 +7,7 @@ From: toniher/neo4j-biorelation-alpine
 
 %runscript
 	cd /var/lib/neo4j
-	/sbin/tini -g -- /docker-entrypoint.sh neo4j
+	bin/neo4j console
 	
 
 
