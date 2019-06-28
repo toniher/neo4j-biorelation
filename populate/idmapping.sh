@@ -40,17 +40,17 @@ for file in $DIR/*
 do
 	echo $file
 	#echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;"
-	echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:XREF) SET n = { id:row.xref, source:row.source }\",{batchSize:10000, retries: 5, iterateList:true, parallel:false});" 
+	echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:XREF) SET n = { id:row.xref, source:row.source }\",{batchSize:10000, retries: 5, iterateList:true, parallel:true});" 
     #$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-	$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:XREF) SET n = { id:row.xref, source:row.source }\",{batchSize:10000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:XREF) SET n = { id:row.xref, source:row.source }\",{batchSize:10000, retries: 5, iterateList:true, parallel:true});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 for file in $DIR/*
 do
 	echo $file
 	
-	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (n:XREF {id:row.xref }) call apoc.merge.relationship(c,'has_xref',{},{},n) yield rel return count(*)\",{batchSize:2500, retries: 5, iterateList:true, parallel:false});"
-	$NEO4JSHELL "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (n:XREF {id:row.xref}) call apoc.merge.relationship(c,'has_xref',{},{},n) yield rel return count(*)\",{batchSize:2500, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (n:XREF {id:row.xref }) call apoc.merge.relationship(c,'has_xref',{},{},n) yield rel return count(*)\",{batchSize:5000, retries: 5, iterateList:true, parallel:false});"
+	$NEO4JSHELL "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (n:XREF {id:row.xref}) call apoc.merge.relationship(c,'has_xref',{},{},n) yield rel return count(*)\",{batchSize:5000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 done
 
 

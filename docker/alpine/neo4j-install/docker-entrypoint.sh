@@ -1,5 +1,6 @@
 #!/bin/bash -eu
 
+NEO4J_PATH=/var/lib/neo4j
 cmd="$1"
 
 # If we're running as root, then run as the neo4j user. Otherwise
@@ -24,8 +25,8 @@ readonly exec_cmd
 # volumes (stuff not owned by neo4j)
 if [[ "$(id -u)" = "0" ]]; then
   # Non-recursive chown for the base directory
-  chown "${userid}":"${groupid}" /var/lib/neo4j
-  chmod 700 /var/lib/neo4j
+  chown "${userid}":"${groupid}" $NEO4J_PATH
+  chmod 700 $NEO4J_PATH
 fi
 
 while IFS= read -r -d '' dir
@@ -148,7 +149,7 @@ unset NEO4J_dbms_txLog_rotation_retentionPolicy NEO4J_UDC_SOURCE \
 : ${NEO4J_apoc_import_file_enabled:="true"}
 
 if [ -d /conf ]; then
-    find /conf -type f -exec cp {} conf \;
+    find /conf -type f -exec cp {} $NEO4J_PATH/conf \;
 fi
 
 if [ -d /ssl ]; then
@@ -197,12 +198,12 @@ for i in $( set | grep ^NEO4J_ | awk -F'=' '{print $1}' | sort -rn ); do
     # Don't allow settings with no value or settings that start with a number (neo4j converts settings to env variables and you cannot have an env variable that starts with a number)
     if [[ -n ${value} ]]; then
         if [[ ! "${setting}" =~ ^[0-9]+.*$ ]]; then
-            if grep -q -F "${setting}=" conf/neo4j.conf; then
+            if grep -q -F "${setting}=" $NEO4J_PATH/conf/neo4j.conf; then
                 # Remove any lines containing the setting already
-                sed --in-place "/${setting}=.*/d" conf/neo4j.conf
+                sed --in-place "/${setting}=.*/d" $NEO4J_PATH/conf/neo4j.conf
             fi
             # Then always append setting to file
-            echo "${setting}=${value}" >> conf/neo4j.conf
+            echo "${setting}=${value}" >> $NEO4J_PATH/conf/neo4j.conf
         else
             echo >&2 "WARNING: ${setting} not written to conf file because settings that start with a number are not permitted"
         fi
