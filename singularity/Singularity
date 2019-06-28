@@ -1,0 +1,13 @@
+BootStrap: docker
+From: toniher/neo4j-biorelation-alpine
+
+%labels
+	Maintainer Toni Hermoso Pulido
+	Version 0.1.0
+
+%runscript
+	cd /var/lib/neo4j
+	/sbin/tini -g -- /docker-entrypoint.sh neo4j
+	
+
+

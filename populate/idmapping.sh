@@ -7,7 +7,7 @@ set -a
 
 set +a
 
-mkdir -p $IDMAPDIR
+#mkdir -p $IDMAPDIR
 
 # Let's uncompress all files
 #cd $IDMAPDIR
@@ -20,15 +20,15 @@ mkdir -p $IDMAPDIR
 # DIR of parts
 DIR=$IDMAPDIR/id
 
-mkdir -p $DIR; cd $DIR; split -l 5000000 $IDMAPFILEPATH idmap
+#mkdir -p $DIR; cd $DIR; split -l 5000000 $IDMAPFILEPATH idmap
 
 
 echo "Preparing ID files"
 
-for file in $DIR/*
-do
-	echo -e "id\tsource\txref" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
-done
+#for file in $DIR/*
+#do
+#	echo -e "id\tsource\txref" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
+#done
 
 
 echo "CREATE CONSTRAINT ON (n:XREF) ASSERT n.id IS UNIQUE;"
