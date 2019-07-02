@@ -5,6 +5,9 @@ From: toniher/neo4j-biorelation-alpine
 	Maintainer Toni Hermoso Pulido
 	Version 0.1.0
 
+%files
+	neo4j.conf /var/lib/neo4j/conf
+
 %runscript
 	cd /var/lib/neo4j
 	bin/neo4j console
