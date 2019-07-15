@@ -1,4 +1,4 @@
-FROM openjdk:9-jdk-alpine
+FROM openjdk:13-jdk-alpine
 
 ARG NEO4J_VERSION=3.5.7
 ARG NEO4J_BIORELATION_VERSION=0.2.3
@@ -18,7 +18,7 @@ ENV NEO4J_PATH=/var/lib/neo4j
 
 ENV NEO4J_TARBALL=neo4j-community-${NEO4J_VERSION}-unix.tar.gz
 ARG NEO4J_URI=http://dist.neo4j.org/neo4j-community-${NEO4J_VERSION}-unix.tar.gz
-ENV NEO4J_SHA256=f536224565ce27b95947c91a37d52b9ba9e80247d8d3262075b24b8d47f8532a
+ENV NEO4J_SHA256=31c8f398df9342928502a7321f045eb8f2b96ec4ded26f9f057dc6f6fa10c60c
 
 RUN apk add --no-cache curl
 
