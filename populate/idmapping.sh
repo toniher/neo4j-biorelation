@@ -31,8 +31,8 @@ echo "Preparing ID files"
 #done
 
 
-echo "CREATE CONSTRAINT ON (n:XREF) ASSERT n.id IS UNIQUE;"
-$NEO4JSHELL "CREATE CONSTRAINT ON (n:XREF) ASSERT n.id IS UNIQUE;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX ON :XREF(id);"
+$NEO4JSHELL "CREATE INDEX ON :XREF(id);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 echo "CREATE INDEX ON :XREF(source);"
 $NEO4JSHELL "CREATE INDEX ON :XREF(source);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
