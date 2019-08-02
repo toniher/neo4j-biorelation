@@ -16,10 +16,18 @@ INFOURL=ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gpi.gz
 INFOFILE=goa_uniprot_all.gpi
 GOAFILE=goa_uniprot_all.gpa
 
+# ISOFORM
+ISOURL=ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot_varsplic.fasta.gz
+ISODIR=/scratch/iso
+
+# IntAct
+INTACTURL=ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt
+INTACTDIR=/scratch/intact
+
 # IDmapping URL
-IDMAPURL=ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
-IDMAPDIR=/scratch/idmapping
-IDMAPFILEPATH=/scratch/idmappingall.csv
+# IDMAPURL=ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
+# IDMAPDIR=/scratch/idmapping
+# IDMAPFILEPATH=/scratch/idmappingall.csv
 
 # Temp dirs
 MOMENTDIR=/scratch/moment

@@ -56,6 +56,10 @@ We provide data population scripts at ```population``` directory for sake of con
 
 * Simplify functions
 
+* Add Isoforms ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot_varsplic.fasta.gz
+
+* Add IntAct ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt
+
 * Restrict a bit more path finding
 	* Allow different GO options relations (is_a, part_of, etc.)
 
