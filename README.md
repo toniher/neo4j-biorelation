@@ -60,6 +60,8 @@ We provide data population scripts at ```population``` directory for sake of con
 
 * Add IntAct ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt
 
+* Add Molecular interaction controlled vocabulary https://www.ebi.ac.uk/ols/ontologies/mi
+
 * Restrict a bit more path finding
 	* Allow different GO options relations (is_a, part_of, etc.)
 
