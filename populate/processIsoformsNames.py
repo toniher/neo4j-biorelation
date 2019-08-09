@@ -26,7 +26,7 @@ def main(argv):
             
             preparts = listiso[0].split("-")
             
-            if listiso[0] != preparts[0]+"-1":
+            if listiso[0] != preparts[0]+"-1"+"\t"+preparts[0]:
                 listiso = [preparts[0]+"-1"+"\t"+preparts[0]] + listiso
             
             print( "\n".join( listiso ) )
@@ -38,7 +38,7 @@ def main(argv):
         l = l + 1 
     
     preparts = listiso[0].split("-")
-    if listiso[0] != preparts[0]+"-1":
+    if listiso[0] != preparts[0]+"-1"+"\t"+preparts[0]:
         listiso = [preparts[0]+"-1"+"\t"+preparts[0]] + listiso
             
     print( "\n".join( listiso ) ) 
