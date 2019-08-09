@@ -41,7 +41,7 @@ for file in $DIR/*
 do
 	echo $file
 	ISOAPOC1="CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true ) yield map as row return row\", \"CREATE (i:ISO {id: row.id} )\",{batchSize:5000, retries: 5, iterateList:true, parallel:true});"
-	ISOAPOC2="CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true ) yield map as row return row\", \"MATCH (n:MOL {id:row.uniprot}), (i:ISO {id:row.iso }) call apoc.merge.relationship(a,'has_isoform',{},{},b) yield rel return count(*)\",{batchSize:5000, retries: 5, iterateList:true, parallel:false});"
+	ISOAPOC2="CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true ) yield map as row return row\", \"MATCH (n:MOL {id:row.uniprot}), (i:ISO {id:row.iso }) call apoc.merge.relationship(n,'has_isoform',{},{},i) yield rel return count(*)\",{batchSize:5000, retries: 5, iterateList:true, parallel:false});"
 	echo $ISOAPOC1	
 	echo $ISOAPOC2
 	$NEO4JSHELL $ISOAPOC1 >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
