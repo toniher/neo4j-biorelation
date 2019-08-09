@@ -18,6 +18,7 @@ GOAFILE=goa_uniprot_all.gpa
 
 # ISOFORM
 ISOURL=ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot_varsplic.fasta.gz
+ISOFILE=uniprot_sprot_varsplic.fasta
 ISODIR=/scratch/iso
 
 # IntAct
