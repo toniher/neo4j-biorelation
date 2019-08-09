@@ -27,19 +27,19 @@ def main(argv):
             preparts = listiso[0].split("-")
             
             if listiso[0] != preparts[0]+"-1":
-                listiso = [preparts[0]+"-1"] + listiso
+                listiso = [preparts[0]+"-1"+"\t"+preparts[0]] + listiso
             
             print( "\n".join( listiso ) )
             listpre = parts[0]
             listiso = []
 
-        listiso.append( row[0] )
+        listiso.append( row[0]+"\t"+parts[0] )
         
         l = l + 1 
     
     preparts = listiso[0].split("-")
     if listiso[0] != preparts[0]+"-1":
-        listiso = [preparts[0]+"-1"] + listiso
+        listiso = [preparts[0]+"-1"+"\t"+preparts[0]] + listiso
             
     print( "\n".join( listiso ) ) 
     
