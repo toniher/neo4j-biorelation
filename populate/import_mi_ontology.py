@@ -3,6 +3,9 @@
 import networkx
 import obonet
 import sys
+import logging
+import re
+import argparse
 from py2neo import Graph, Node, Relationship
 
 parser = argparse.ArgumentParser()
@@ -51,9 +54,11 @@ keys = []
 def process_string( prestr ):
 
 	# We are rming info from PMID and so...
+	prestr = prestr.replace( "\\\"", "#@" )
 	parts = prestr.split( "\"" )
+	
 	if len( parts ) > 1 :
-		
+		parts[1] = parts[1].replace( "#@", "\\\"" )
 		return parts[1]
 		
 	return prestr
@@ -81,14 +86,11 @@ def process_edges( node1, data, typerel ):
 for n in obograph.nodes(data=True):
 	node = {}
 	node["id"] = n[0]
-
-	#print( node )
-	#print( n[1].keys() )
 	
 	for k in list( n[1].keys() ) :
 		
 		if not k in exclude :
-			
+					
 			if isinstance( n[1][k], list ):
 				
 				node[k] = []
@@ -97,9 +99,10 @@ for n in obograph.nodes(data=True):
 					
 					# node[k] = n[1][k]
 			else :
-			
+							
 				node[k] = process_string( n[1][k] )
-				
+			
+			
 		if k in relate :
 			
 			# Handle edges
@@ -111,12 +114,6 @@ for n in obograph.nodes(data=True):
 	# print( node )
 	nodes.append( node )
 
-
-#for e in graph.edges(data=True):
-#    print( e )
-
-# print( nodes )
-print( edges )
 
 
 
@@ -149,6 +146,23 @@ def process_relationship( label, statement, graph ):
 	tx.process()
 	tx.commit()
 
+def create_cyper_keys( node ) :
+	
+	cyphArr = []
+	
+	for k in node :
+		
+		cyphStr = ""
+		if isinstance( node[k], list ) :
+			cyphStr = k + ": [" + ", ".join( map( lambda x: "'" + re.sub( r"\'", "\\'", x ) + "'", node[k] ) ) + "]"
+		else :
+			cyphStr = k + ": '" + re.sub( r"\'", "\\'", node[k] ) + "'"
+			
+		cyphArr.append( cyphStr )
+		
+		
+	return ", ".join( cyphArr )
+	
 
 graph = Graph(server)
 
@@ -161,10 +175,10 @@ for n in nodes :
 	node_keys = create_cyper_keys( n )
 	statement = "CREATE (n:"+label+" { "+node_keys+" })"
 	
-	process_statement( label, statement )
-	print( n )
+	process_statement( statement, graph )
 	
 for e in edges :
 	
+	#print( e )
 	process_relationship( label, e, graph )
 	
