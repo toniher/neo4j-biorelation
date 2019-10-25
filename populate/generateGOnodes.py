@@ -25,7 +25,7 @@ def main(argv):
 
         reader = csv.reader(open(termfile),delimiter="\t")
         
-        print( "id\tname\tterm_type\tacc\tdefinition" )
+        print( "id:ID\tname\tterm_type\tacc\tdefinition" )
 
         
         for row in reader:

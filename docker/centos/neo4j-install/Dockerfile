@@ -58,4 +58,4 @@ RUN pip install neobolt py2neo
 EXPOSE 7474 7473 7687 1337
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["neo4j"]
+#CMD ["neo4j"]

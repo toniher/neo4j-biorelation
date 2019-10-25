@@ -1,5 +1,6 @@
 # Neo4j
 NEO4JSHELL=/var/lib/neo4j/bin/cypher-shell
+NEO4JADMIN=/var/lib/neo4j/bin/neo4j-admin
 
 # GO URLs
 GOURL=http://archive.geneontology.org/latest-lite/go_weekly-assocdb-tables.tar.gz
