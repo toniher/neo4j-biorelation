@@ -13,8 +13,8 @@ cd $GODIR
 
 if [ "$DOWNIFEXISTS" -eq "1" ]; then
 
-	if [ -f $GOURL ]; then
-		rm $GOURL
+	if [ -d $GODIR/go_weekly-assocdb-tables ]; then
+		rm -rf $GODIR/go_weekly-assocdb-tables
 	fi
 	
 	curl --fail --silent --show-error --location --remote-name $GOURL
@@ -43,8 +43,8 @@ cd $TAXDIR
 
 if [ "$DOWNIFEXISTS" -eq "1" ]; then
 
-	if [ -f $TAXURL ]; then
-		rm $TAXURL $TAXURL.md5
+	if [ -f $TAXDIR/nodes.dmp ]; then
+		rm -rf $TAXDIR/*
 	fi
 
 	curl --fail --silent --show-error --location --remote-name $TAXURL
@@ -112,7 +112,7 @@ $NEO4JADMIN import --array-delimiter=$ --delimiter=TAB --id-type=STRING --nodes:
 									 --relationships=$GORELS --relationships=$TAXRELS --relationships=$INFOFILE.reduced --relationships=$GOAFILE.reduced
 
 
-rm go_weekly-assocdb-tables.tar.gz
-rm taxdump.tar.gz
+# rm go_weekly-assocdb-tables.tar.gz
+# rm taxdump.tar.gz
 rm $GOAFILE.pre
 
