@@ -33,7 +33,7 @@ def create_taxid(line, number):
 			list_names = '"' + list_names + '"'
 		
 		# We assume always al params
-		statement = [ taxid, rank, scientific_list[taxid], list_names]
+		statement = [ "TAXID:"+taxid, taxid, rank, scientific_list[taxid], list_names]
 		#print statement
 		
 		parentid[taxid] = str(line[1]).strip()
@@ -115,7 +115,7 @@ def main(argv):
 		print( len( list_statements ) )
 		
 		fileout=open( outdir + "/taxnodes.csv", 'w+')
-		fileout.write( "\t".join( [ "id:ID", "rank", "scientific_name", "name:string[]" ] ) + "\n" )
+		fileout.write( "\t".join( [ "id:ID", "taxid:integer", "rank", "scientific_name", "name:string[]" ] ) + "\n" )
 
 		for statements in list_statements :
 				process_statement( statements, fileout )
@@ -131,7 +131,7 @@ def main(argv):
 				parent_taxid = parentid[key]
 				
 				
-				statement = [ key, parent_taxid, "has_parent" ]
+				statement = [ "TAXID:"+ key, "TAXID:" + parent_taxid, "has_parent" ]
 				statements.append( statement )
 				
 				iter = iter + 1
