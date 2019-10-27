@@ -55,6 +55,6 @@ TAXRELS=$MOMENTDIR/taxrels.csv
 
 python prepareTaxNodesAndRels.py $TAXDIR/nodes.dmp $TAXDIR/names.dmp $MOMENTDIR
 
-$NEO4JADMIN import --array-delimiter=$ --delimiter=TAB --id-type=STRING --nodes:GO=$GONODES --nodes:TAXID=$TAXNODES --relationships="$NODERELS,$TAXRELS"
+$NEO4JADMIN import --array-delimiter=$ --delimiter=TAB --id-type=STRING --nodes:GO=$GONODES --nodes:TAXID=$TAXNODES --relationships="$GORELS,$TAXRELS"
 
 
