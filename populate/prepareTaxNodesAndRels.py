@@ -29,9 +29,6 @@ def create_taxid(line, number):
 		
 		list_names =  "$".join( names_list[taxid] )
 		
-		if '"' in list_names :
-			list_names = '"' + list_names + '"'
-		
 		# We assume always al params
 		statement = [ taxid, rank, scientific_list[taxid], list_names]
 		#print statement
@@ -62,6 +59,9 @@ def main(argv):
 				#Escaping names
 				namentry = str(row[1]).strip()
 				namentry = str(row[1]).strip().replace('"', '""')
+						
+				if '"' in namentry :
+					namentry = '"' + namentry + '"'
 				# Following this: https://neo4j.com/developer/kb/how-do-i-use-load-csv-with-data-including-quotes/
 				#print namentry
 				
