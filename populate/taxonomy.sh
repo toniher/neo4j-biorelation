@@ -36,7 +36,7 @@ TAXRELS=$MOMENTDIR/taxrels.csv
 
 python prepareTaxNodesAndRels.py $TAXDIR/nodes.dmp $TAXDIR/names.dmp $MOMENTDIR
 
-$NEO4JADMIN import --delimiter=TAB --id-type=STRING --nodes:TAXID=$TAXNODES --relationships=$TAXRELS
+$NEO4JADMIN import --array-delimiter=$ --delimiter=TAB --id-type=STRING --nodes:TAXID=$TAXNODES --relationships=$TAXRELS
 
 #echo "CREATE INDEX ON :TAXID(rank)"
 #$NEO4JSHELL "CREATE INDEX ON :TAXID(rank)"
