@@ -40,4 +40,5 @@ TMPDIR=/scratch/tmp
 SCRATCHDIR=/scratch/neo4j
 DOCKERNAME=neo4jbio
 
-
+# If download if exists
+DOWNIFEXISTS=1

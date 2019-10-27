@@ -5,18 +5,23 @@ set -ueo pipefail
 # CONFIG parameters
 
 set -a 
-
 . ./vars.sh
-
 set +a
 
 mkdir -p $GODIR
 cd $GODIR
 
-curl --fail --silent --show-error --location --remote-name $GOURL
+if [ "$DOWNIFEXISTS" -eq "1" ]; then
+
+	if [ -f $GOURL ]; then
+		rm $GOURL
+	fi
+	
+	curl --fail --silent --show-error --location --remote-name $GOURL
+
+fi
 
 tar zxf go_weekly-assocdb-tables.tar.gz
-rm go_weekly-assocdb-tables.tar.gz
 
 cd $SCRIPTPATH
 
@@ -36,13 +41,20 @@ python generateGOrels.py $GODIR/go_weekly-assocdb-tables/term.txt $GODIR/go_week
 mkdir -p $TAXDIR
 cd $TAXDIR
 
-curl --fail --silent --show-error --location --remote-name $TAXURL
-curl --fail --silent --show-error --location --remote-name $TAXURL.md5
+if [ "$DOWNIFEXISTS" -eq "1" ]; then
+
+	if [ -f $TAXURL ]; then
+		rm $TAXURL $TAXURL.md5
+	fi
+
+	curl --fail --silent --show-error --location --remote-name $TAXURL
+	curl --fail --silent --show-error --location --remote-name $TAXURL.md5
+
+fi
 
 md5sum -c taxdump.tar.gz.md5
 
 tar zxf taxdump.tar.gz
-rm taxdump.tar.gz
 
 cd $SCRIPTPATH
 
@@ -59,9 +71,22 @@ mkdir -p $GOADIR
 
 # Let's uncompress all files
 cd $GOADIR
-curl --fail --silent --show-error --location --remote-name $GOAURL
-curl --fail --silent --show-error --location --remote-name $INFOURL
-gunzip *gz
+
+if [ "$DOWNIFEXISTS" -eq "1" ]; then
+
+	if [ -f $GOAFILE ]; then
+		rm $GOAFILE
+	fi
+
+	if [ -f $INFOFILE ]; then
+		rm $INFOFILE
+	fi
+
+	curl --fail --silent --show-error --location --remote-name $GOAURL
+	curl --fail --silent --show-error --location --remote-name $INFOURL
+	gunzip *gz
+	
+fi
 
 # Base entries
 # cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { $F[1]=~s/\"/\\"/g; print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
@@ -79,7 +104,6 @@ cut -f 2,3,4,5,6 $GOAFILE  | perl -F'\t' -lane ' if ($F[0]!~/^(\!|gpa-)/ ) { pri
 
 python mapGOidsInGOA.py $GOAFILE.pre $GONODES > $GOAFILE.reduced
 
-rm $GOAFILE.pre
 
 echo -e "MOL:START_ID\tqualifier\tGO:END_ID\tref\tevidence" |cat - $GOAFILE.reduced > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $GOAFILE.reduced
 
@@ -87,4 +111,8 @@ echo -e "MOL:START_ID\tqualifier\tGO:END_ID\tref\tevidence" |cat - $GOAFILE.redu
 $NEO4JADMIN import --array-delimiter=$ --delimiter=TAB --id-type=STRING --nodes:GO=$GONODES --nodes:TAXID=$TAXNODES --nodes:MOL=$INFOFILE.protein \
 									 --relationships=$GORELS --relationships=$TAXRELS --relationships=$INFOFILE.reduced --relationships=$GOAFILE.reduced
 
+
+rm go_weekly-assocdb-tables.tar.gz
+rm taxdump.tar.gz
+rm $GOAFILE.pre
 
