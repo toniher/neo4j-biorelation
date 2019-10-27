@@ -13,10 +13,10 @@ set +a
 mkdir -p $GODIR
 cd $GODIR
 
-#curl --fail --silent --show-error --location --remote-name $GOURL
+curl --fail --silent --show-error --location --remote-name $GOURL
 
-#tar zxf go_weekly-assocdb-tables.tar.gz
-#rm go_weekly-assocdb-tables.tar.gz
+tar zxf go_weekly-assocdb-tables.tar.gz
+rm go_weekly-assocdb-tables.tar.gz
 
 cd $SCRIPTPATH
 

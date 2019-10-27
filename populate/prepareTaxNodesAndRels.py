@@ -110,7 +110,7 @@ def main(argv):
 		print( len( list_statements ) )
 		
 		fileout=open( outdir + "/taxnodes.csv", 'w+')
-		fileout.write( "\t".join( [ "id", "rank", "scientific_name", "name" ] ) + "\n" )
+		fileout.write( "\t".join( [ "id:ID", "rank", "scientific_name", "name" ] ) + "\n" )
 
 		for statements in list_statements :
 				process_statement( statements, fileout )
@@ -139,7 +139,7 @@ def main(argv):
 		
 		fileout=open( outdir + "/taxrels.csv", 'w+')
 		
-		fileout.write( "\t".join( [ "start", "end", "rel" ] ) + "\n" )
+		fileout.write( "\t".join( [ "TAXID:START_ID", "TAXID:END_ID", ":TYPE" ] ) + "\n" )
 		for statements in list_statements :
 				process_statement( statements, fileout )
 		fileout.close()
