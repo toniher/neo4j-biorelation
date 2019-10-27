@@ -29,7 +29,7 @@ echo "Preparing MOL files"
 
 for file in $DIR/*
 do
-	echo -e "id\tname\ttype" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
+	echo -e "id:ID\tname\ttype" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
 done
 
 echo "CREATE CONSTRAINT ON (n:MOL) ASSERT n.id IS UNIQUE;"
@@ -41,21 +41,21 @@ $NEO4JSHELL "CREATE INDEX ON :MOL(type);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/s
 
 echo "Neo4j importing MOL files"
 
-for file in $DIR/*
-do
-	echo $file
-	#echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;"
-	echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, retries: 5, iterateList:true, parallel:false});" 
-    #$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-	$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-done
+#for file in $DIR/*
+#do
+#	echo $file
+#	#echo "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;"
+#	echo "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, retries: 5, iterateList:true, parallel:false});" 
+#    #$NEO4JSHELL "LOAD CSV WITH HEADERS FROM \"file://${file}\" AS row FIELDTERMINATOR \"\t\" CREATE (n:MOL) SET n = row ;" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+#	$NEO4JSHELL "CALL apoc.periodic.iterate(\"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\",\"CREATE (n:MOL) SET n = row\",{batchSize:10000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+#done
 
 
 cd $GOADIR
 
 
 # Adding relationships to Taxon
-cut -f 2,7 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ ) { my $id=$F[0]; my $tax=$F[1]; $tax=~s/taxon\://g; print $id, "\t", $tax; } ' > $INFOFILE.reduced
+cut -f 2,7 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ ) { my $id=$F[0]; my $tax=$F[1]; $tax=~s/taxon\://g; print $id, "\t", "TAXID:".$tax; } ' > $INFOFILE.reduced
 
 # DIR of parts
 DIR=$GOADIR/moltaxon
@@ -67,16 +67,16 @@ echo "Preparing Taxon Files"
 
 for file in $DIR/*
 do
-	echo -e "id\ttaxon" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
+	echo -e "MOL:START_ID\tTAXID:END_ID" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
 done
 
-for file in $DIR/*
-do
-	echo $file
-	
-	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,'has_taxon',{},{},p) yield rel return count(*)\",{batchSize:1000, retries: 5, iterateList:true, parallel:false});"
-	$NEO4JSHELL "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,'has_taxon',{},{},p) yield rel return count(*)\",{batchSize:1000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-done
+#for file in $DIR/*
+#do
+#	echo $file
+#	
+#	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,'has_taxon',{},{},p) yield rel return count(*)\",{batchSize:1000, retries: 5, iterateList:true, parallel:false});"
+#	$NEO4JSHELL "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:TAXID {id:toInt( row.taxon )}) call apoc.merge.relationship(c,'has_taxon',{},{},p) yield rel return count(*)\",{batchSize:1000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+#done
 
 cd $GOADIR
 
@@ -96,27 +96,27 @@ echo "Preparing GO files"
 
 for file in $DIR/*
 do
-		echo -e "id\tqualifier\tgoacc\tref\tevidence" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
+		echo -e "MOL:START_ID\tqualifier\tGO:END_ID\tref\tevidence" |cat - $file > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $file
 
 done
 
 
-echo "CREATE INDEX ON :has_go(evidence);"
-$NEO4JSHELL "CREATE INDEX ON :has_go(evidence);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :has_go(ref);"
-$NEO4JSHELL "CREATE INDEX ON :has_go(ref);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :has_go(qualifier);"
-$NEO4JSHELL "CREATE INDEX ON :has_go(qualifier);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-
-
-echo "Neo4j importing GO"
-
-for file in $DIR/*
-do
-	echo $file
-	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,'has_go',{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) yield rel return count(*) \",{batchSize:1000, retries: 5, iterateList:true, parallel:false});"
-	$NEO4JSHELL "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,'has_go',{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) yield rel return count(*) \",{batchSize:1000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-done
+#echo "CREATE INDEX ON :has_go(evidence);"
+#$NEO4JSHELL "CREATE INDEX ON :has_go(evidence);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+#echo "CREATE INDEX ON :has_go(ref);"
+#$NEO4JSHELL "CREATE INDEX ON :has_go(ref);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+#echo "CREATE INDEX ON :has_go(qualifier);"
+#$NEO4JSHELL "CREATE INDEX ON :has_go(qualifier);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+#
+#
+#echo "Neo4j importing GO"
+#
+#for file in $DIR/*
+#do
+#	echo $file
+#	echo "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,'has_go',{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) yield rel return count(*) \",{batchSize:1000, retries: 5, iterateList:true, parallel:false});"
+#	$NEO4JSHELL "CALL apoc.periodic.iterate( \"CALL apoc.load.csv('${file}', { sep:'TAB', header:true } ) yield map as row return row\", \"MATCH (c:MOL {id:row.id}), (p:GO_TERM {acc:row.goacc}) call apoc.merge.relationship(c,'has_go',{},{ evidence: row.evidence, ref: row.ref, qualifier: row.qualifier },p) yield rel return count(*) \",{batchSize:1000, retries: 5, iterateList:true, parallel:false});" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+#done
 
 cd $GOADIR
 
