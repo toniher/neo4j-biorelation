@@ -55,6 +55,35 @@ TAXRELS=$MOMENTDIR/taxrels.csv
 
 python prepareTaxNodesAndRels.py $TAXDIR/nodes.dmp $TAXDIR/names.dmp $MOMENTDIR
 
+mkdir -p $GOADIR
+
+# Let's uncompress all files
+cd $GOADIR
+curl --fail --silent --show-error --location --remote-name $GOAURL
+curl --fail --silent --show-error --location --remote-name $INFOURL
+gunzip *gz
+
+# Base entries
+# cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { $F[1]=~s/\"/\\"/g; print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
+cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
+
+echo -e "id:ID\tname\ttype" |cat - $$INFOFILE.protein > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $INFOFILE.protein
+
+# Adding relationships to Taxon
+cut -f 2,7 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ ) { my $id=$F[0]; my $tax=$F[1]; $tax=~s/taxon\://g; print $id, "\t", "TAXID:".$tax; } ' > $INFOFILE.reduced
+
+echo -e "MOL:START_ID\tTAXID:END_ID" |cat - $INFOFILE.reduced > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $INFOFILE.reduced
+
+# Adding relationships to GOA
+cut -f 2,3,4,5,6 $GOAFILE  | perl -F'\t' -lane ' if ($F[0]!~/^(\!|gpa-)/ ) { print join( "\t", @F[0..4] ); } ' > $GOAFILE.pre
+
+python mapGOidsInGOA.py $GOAFILE.pre $GONODES > $GOAFILE.reduced
+
+rm $GOAFILE.pre
+
+echo -e "MOL:START_ID\tqualifier\tGO:END_ID\tref\tevidence" |cat - $GOAFILE.reduced > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $GOAFILE.reduced
+
+
 $NEO4JADMIN import --array-delimiter=$ --delimiter=TAB --id-type=STRING --nodes:GO=$GONODES --nodes:TAXID=$TAXNODES --relationships=$GORELS --relationships=$TAXRELS
 
 
