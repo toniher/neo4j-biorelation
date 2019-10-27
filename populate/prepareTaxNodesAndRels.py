@@ -56,7 +56,7 @@ def main(argv):
 				#print taxid
 				#Escaping names
 				namentry = str(row[1]).strip()
-				namentry = str(row[1]).strip().replace('"', '""')
+				namentry = '"' + str(row[1]).strip().replace('"', '""') + '"'
 				# Following this: https://neo4j.com/developer/kb/how-do-i-use-load-csv-with-data-including-quotes/
 				#print namentry
 				
