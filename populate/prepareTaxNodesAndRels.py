@@ -115,7 +115,7 @@ def main(argv):
 		print( len( list_statements ) )
 		
 		fileout=open( outdir + "/taxnodes.csv", 'w+')
-		fileout.write( "\t".join( [ "id:ID", "rank", "scientific_name", "name" ] ) + "\n" )
+		fileout.write( "\t".join( [ "id:ID", "rank", "scientific_name", "name:string[]" ] ) + "\n" )
 
 		for statements in list_statements :
 				process_statement( statements, fileout )
