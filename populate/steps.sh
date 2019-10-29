@@ -8,6 +8,8 @@ set -a
 . ./vars.sh
 set +a
 
+echo "GO processing"
+
 mkdir -p $GODIR
 cd $GODIR
 
@@ -37,6 +39,7 @@ python generateGOnodes.py $GODIR/go_weekly-assocdb-tables/term.txt $GODIR/go_wee
 # replace term2term.txt to a version with 3 column and with rel replaced with its name version
 python generateGOrels.py $GODIR/go_weekly-assocdb-tables/term.txt $GODIR/go_weekly-assocdb-tables/term2term.txt > $GORELS
 
+echo "TAXONOMY processing"
 
 mkdir -p $TAXDIR
 cd $TAXDIR
@@ -67,6 +70,8 @@ TAXRELS=$MOMENTDIR/taxrels.csv
 
 python prepareTaxNodesAndRels.py $TAXDIR/nodes.dmp $TAXDIR/names.dmp $MOMENTDIR
 
+echo "GOA processing"
+
 mkdir -p $GOADIR
 
 # Let's uncompress all files
@@ -89,10 +94,10 @@ if [ "$DOWNIFEXISTS" -eq "1" ]; then
 fi
 
 # Base entries
-# cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { $F[1]=~s/\"/\\"/g; print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
+cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { $F[1]=~s/\"/\\"/g; print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
 cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
 
-echo -e "id:ID\tname\ttype" |cat - $$INFOFILE.protein > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $INFOFILE.protein
+echo -e "id:ID\tname\ttype" |cat - $INFOFILE.protein > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $INFOFILE.protein
 
 # Adding relationships to Taxon
 cut -f 2,7 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ ) { my $id=$F[0]; my $tax=$F[1]; $tax=~s/taxon\://g; print $id, "\t", "TAXID:".$tax; } ' > $INFOFILE.reduced
@@ -102,11 +107,12 @@ echo -e "MOL:START_ID\tTAXID:END_ID" |cat - $INFOFILE.reduced > $MOMENTDIR/tempf
 # Adding relationships to GOA
 cut -f 2,3,4,5,6 $GOAFILE  | perl -F'\t' -lane ' if ($F[0]!~/^(\!|gpa-)/ ) { print join( "\t", @F[0..4] ); } ' > $GOAFILE.pre
 
-python mapGOidsInGOA.py $GOAFILE.pre $GONODES > $GOAFILE.reduced
+python $SCRIPTPATH/mapGOidsInGOA.py $GONODES $GOAFILE.pre > $GOAFILE.reduced
 
 
 echo -e "MOL:START_ID\tqualifier\tGO:END_ID\tref\tevidence" |cat - $GOAFILE.reduced > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $GOAFILE.reduced
 
+echo "IMPORT ALL"
 
 $NEO4JADMIN import --array-delimiter=$ --delimiter=TAB --id-type=STRING --nodes:GO=$GONODES --nodes:TAXID=$TAXNODES --nodes:MOL=$INFOFILE.protein \
 									 --relationships=$GORELS --relationships=$TAXRELS --relationships=$INFOFILE.reduced --relationships=$GOAFILE.reduced

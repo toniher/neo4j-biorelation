@@ -35,7 +35,7 @@ def main(argv):
 				
 				row[2] = gomap[goacc]
 				
-				print( "\t".join( row ) + "\n" )
+				print( "\t".join( row )  )
 		
 		
 
