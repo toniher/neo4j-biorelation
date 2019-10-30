@@ -100,25 +100,59 @@ cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { print join( "\
 echo -e "id:ID\tname\ttype" |cat - $INFOFILE.protein > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $INFOFILE.protein
 
 # Adding relationships to Taxon
-cut -f 2,7 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ ) { my $id=$F[0]; my $tax=$F[1]; $tax=~s/taxon\://g; print $id, "\t", "TAXID:".$tax; } ' > $INFOFILE.reduced
+cut -f 2,7 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ && $F[1]=~/^taxon/ ) { my $id=$F[0]; my $tax=$F[1]; $tax=~s/taxon\://g; print $id, "\t", "TAXID:".$tax."\thas_taxon"; } ' > $INFOFILE.reduced
 
-echo -e "MOL:START_ID\tTAXID:END_ID" |cat - $INFOFILE.reduced > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $INFOFILE.reduced
+echo -e "MOL:START_ID\tTAXID:END_ID\t:TYPE" |cat - $INFOFILE.reduced > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $INFOFILE.reduced
 
 # Adding relationships to GOA
-cut -f 2,3,4,5,6 $GOAFILE  | perl -F'\t' -lane ' if ($F[0]!~/^(\!|gpa-)/ ) { print join( "\t", @F[0..4] ); } ' > $GOAFILE.pre
+cut -f 2,3,4,5,6 $GOAFILE  | perl -F'\t' -lane ' if ($F[0]!~/^(\!|gpa-)/ ) { print join( "\t", @F[0..4] )."\thas_go"; } ' > $GOAFILE.pre
 
 python $SCRIPTPATH/mapGOidsInGOA.py $GONODES $GOAFILE.pre > $GOAFILE.reduced
 
+echo -e "MOL:START_ID\tqualifier\tGO:END_ID\tref\tevidence\t:TYPE" |cat - $GOAFILE.reduced > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $GOAFILE.reduced
 
-echo -e "MOL:START_ID\tqualifier\tGO:END_ID\tref\tevidence" |cat - $GOAFILE.reduced > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $GOAFILE.reduced
+
+echo "ISOFORMS processing"
+
+mkdir -p $ISODIR
+
+cd $ISODIR
+
+if [ "$DOWNIFEXISTS" -eq "1" ]; then
+	
+	if [ -f $ISOFILE ]; then
+		rm $ISOFILE
+	fi
+
+	curl --fail --silent --show-error --location --remote-name $ISOURL
+	gunzip $ISOFILE.gz
+
+fi
+
+
+perl -lane 'if ( $_=~/^\>\w+\|(\S+)\|/ ) { print $1; } '  $ISOFILE |sort -u > isoforms.pre.txt
+python $SCRIPTPATH/processIsoformsNames.py isoforms.pre.txt > isoforms.proc.txt
+perl -lane 'print $F[0]."\t".$F[1]."\t"."is_isoform_of"; ' isoforms.proc.txt > isoform-rels.txt
+rm isoforms.pre.txt isoforms.proc.txt
+
+echo -e "MOL:START_ID\tMOL:END_ID\t:TYPE" |cat - $ISODIR/isoform-rels.txt > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $ISODIR/isoform-rels.txt
+
+cut -f1 $ISODIR/isoform-rels.txt > $ISODIR/isoforms.txt; sed -i 's/ISO\:START_ID/id:ID/g' $ISODIR/isoforms.txt
+
+# TODO. Don't add entries that already defined. Check what to do with non-existant MOL:END_ID
 
 echo "IMPORT ALL"
 
-$NEO4JADMIN import --array-delimiter=$ --delimiter=TAB --id-type=STRING --nodes:GO=$GONODES --nodes:TAXID=$TAXNODES --nodes:MOL=$INFOFILE.protein \
-									 --relationships=$GORELS --relationships=$TAXRELS --relationships=$INFOFILE.reduced --relationships=$GOAFILE.reduced
+
+$NEO4JADMIN import --ignore-missing-nodes=true --array-delimiter=$ --delimiter=TAB --id-type=STRING \
+					--nodes:GO=$GONODES --nodes:TAXID=$TAXNODES \
+					--nodes:MOL=${GOADIR}/${INFOFILE}.protein --nodes:MOL=$ISODIR/isoforms.txt \
+                    --relationships=$GORELS --relationships=$TAXRELS \
+					--relationships=${GOADIR}/${INFOFILE}.reduced --relationships=${GOADIR}/${GOAFILE}.reduced \
+					--relationships=$ISODIR/isoform-rels.txt
 
 
 # rm go_weekly-assocdb-tables.tar.gz
 # rm taxdump.tar.gz
-rm $GOAFILE.pre
+#rm $GOAFILE.pre
 
