@@ -8,6 +8,8 @@ set -a
 . ./vars.sh
 set +a
 
+mkdir -p $TMPDIR
+
 echo "GO processing"
 
 mkdir -p $GODIR
@@ -129,20 +131,26 @@ if [ "$DOWNIFEXISTS" -eq "1" ]; then
 
 fi
 
-
 perl -lane 'if ( $_=~/^\>\w+\|(\S+)\|/ ) { print $1; } '  $ISOFILE |sort -u > isoforms.pre.txt
 python $SCRIPTPATH/processIsoformsNames.py isoforms.pre.txt > isoforms.proc.txt
-perl -lane 'print $F[0]."\t".$F[1]."\t"."is_isoform_of"; ' isoforms.proc.txt > isoform-rels.txt
+perl -lane 'print $F[0]."\t".$F[1]."\t"."isoform_of"; ' isoforms.proc.txt > isoform-rels.txt
 rm isoforms.pre.txt isoforms.proc.txt
+
+cut -f1 $ISODIR/isoform-rels.txt | sort -u > $ISODIR/isoforms.txt;
+cut -f1 ${GOADIR}/${INFOFILE}.protein | grep '-' | sort -u > $ISODIR/isoforms.already.txt
+comm -23 $ISODIR/isoforms.txt $ISODIR/isoforms.already.txt > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $ISODIR/isoforms.txt
+
+perl -lane 'print "$F[0]\tprotein";' $ISODIR/isoforms.txt > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $ISODIR/isoforms.txt
+
+rm $ISODIR/isoforms.already.txt
+
+echo -e "id:ID\ttype" |cat - $ISODIR/isoforms.txt > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $ISODIR/isoforms.txt
 
 echo -e "MOL:START_ID\tMOL:END_ID\t:TYPE" |cat - $ISODIR/isoform-rels.txt > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $ISODIR/isoform-rels.txt
 
-cut -f1 $ISODIR/isoform-rels.txt > $ISODIR/isoforms.txt; sed -i 's/ISO\:START_ID/id:ID/g' $ISODIR/isoforms.txt
-
-# TODO. Don't add entries that already defined. Check what to do with non-existant MOL:END_ID
-
 echo "IMPORT ALL"
 
+cd $TMPDIR
 
 $NEO4JADMIN import --ignore-missing-nodes=true --array-delimiter=$ --delimiter=TAB --id-type=STRING \
 					--nodes:GO=$GONODES --nodes:TAXID=$TAXNODES \
