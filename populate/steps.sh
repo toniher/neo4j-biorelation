@@ -175,6 +175,9 @@ perl -lane 'print $_ if $F[0]=~/\-/ || $F[1]=~/-/' intact-reduced.prepared.txt >
 # This is handled by apoc
 perl -lane 'print $_ unless ( $F[0]=~/\-/ || $F[1]=~/-/ )' intact-reduced.prepared.txt | perl -lane 'chomp; print $_."\tinteracts_with\tIntAct";' - > intact.uniprot.txt
 
+# We fix dates
+sed -i 's/\//-/g' intact.uniprot.txt
+
 echo -e "MOL:START_ID\tMOL:END_ID\tmethod\tintype\tconfidence\tupdate:date\t:TYPE\tsource" |cat - intact.uniprot.txt > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile intact.uniprot.txt
 
 echo "IMPORT ALL"
