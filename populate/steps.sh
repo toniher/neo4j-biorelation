@@ -148,6 +148,35 @@ echo -e "id:ID\ttype" |cat - $ISODIR/isoforms.txt > $MOMENTDIR/tempfile && mv $M
 
 echo -e "MOL:START_ID\tMOL:END_ID\t:TYPE" |cat - $ISODIR/isoform-rels.txt > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $ISODIR/isoform-rels.txt
 
+echo "INTACT"
+
+mkdir -p $INTACTDIR
+
+# Let's uncompress all files
+cd $INTACTDIR
+
+if [ "$DOWNIFEXISTS" -eq "1" ]; then
+
+	if [ -f intact.txt ]; then
+		rm intact.txt
+	fi
+
+	curl --fail --silent --show-error --location --remote-name $INTACTURL
+
+fi
+
+cut -f1,2,7,12,15,32 intact.txt | perl -lane 'print if $F[0]=~/^uniprotkb/ && $F[1]=~/^uniprotkb/' > intact-reduced.txt
+sed -i 's/uniprotkb://g' intact-reduced.txt
+
+python $SCRIPTPATH/filterIntactReduced.py intact-reduced.txt > intact-reduced.prepared.txt
+
+# This is handled by script
+perl -lane 'print $_ if $F[0]=~/\-/ || $F[1]=~/-/' intact-reduced.prepared.txt > intact.mixt.txt
+# This is handled by apoc
+perl -lane 'print $_ unless ( $F[0]=~/\-/ || $F[1]=~/-/ )' intact-reduced.prepared.txt | perl -lane 'chomp; print $_."\tinteracts_with\tIntAct";' - > intact.uniprot.txt
+
+echo -e "MOL:START_ID\tMOL:END_ID\tmethod\tintype\tconfidence\tupdate:date\t:TYPE\tsource" |cat - intact.uniprot.txt > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile intact.uniprot.txt
+
 echo "IMPORT ALL"
 
 cd $TMPDIR
@@ -157,8 +186,8 @@ $NEO4JADMIN import --ignore-missing-nodes=true --array-delimiter=$ --delimiter=T
 					--nodes:MOL=${GOADIR}/${INFOFILE}.protein --nodes:MOL=$ISODIR/isoforms.txt \
                     --relationships=$GORELS --relationships=$TAXRELS \
 					--relationships=${GOADIR}/${INFOFILE}.reduced --relationships=${GOADIR}/${GOAFILE}.reduced \
-					--relationships=$ISODIR/isoform-rels.txt
-
+					--relationships=$ISODIR/isoform-rels.txt \
+					--relationships=$INTACTDIR/intact.uniprot.txt
 
 # rm go_weekly-assocdb-tables.tar.gz
 # rm taxdump.tar.gz
