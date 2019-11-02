@@ -187,7 +187,7 @@ cd $TMPDIR
 $NEO4JADMIN import --ignore-missing-nodes=true --array-delimiter=$ --delimiter=TAB --id-type=STRING \
 					--nodes:GO=$GONODES --nodes:TAXID=$TAXNODES \
 					--nodes:MOL=${GOADIR}/${INFOFILE}.protein --nodes:MOL=$ISODIR/isoforms.txt \
-                    --relationships=$GORELS --relationships=$TAXRELS \
+					--relationships=$GORELS --relationships=$TAXRELS \
 					--relationships=${GOADIR}/${INFOFILE}.reduced --relationships=${GOADIR}/${GOAFILE}.reduced \
 					--relationships=$ISODIR/isoform-rels.txt \
 					--relationships=$INTACTDIR/intact.uniprot.txt
