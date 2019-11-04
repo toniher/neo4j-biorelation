@@ -57,5 +57,6 @@ RUN pip install neobolt py2neo
 
 EXPOSE 7474 7473 7687 1337
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# For allowing bulk import we don't run it
+#ENTRYPOINT ["/docker-entrypoint.sh"]
 #CMD ["neo4j"]
