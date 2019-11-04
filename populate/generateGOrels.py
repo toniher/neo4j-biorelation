@@ -23,11 +23,11 @@ def main(argv):
 
         reader = csv.reader(open(term2termfile),delimiter="\t")
         
-        print( "rel\tsource\ttarget" )
+        print( ":TYPE\tGO:START_ID\tGO:END_ID" )
 
         
         for row in reader:
-                print( relationshipmap[ row[1] ] + "\t" + row[2] + "\t" + row[3] )
+                print( relationshipmap[ row[1] ] + "\t" + "GOID:" + row[2] + "\t" + "GOID:" + row[3] )
             
 
 

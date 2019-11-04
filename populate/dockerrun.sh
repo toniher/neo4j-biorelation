@@ -12,5 +12,5 @@ set +a
 cp *sh $SCRATCHDIR
 cp *py $SCRATCHDIR
 
-docker exec $DOCKERNAME /bin/bash -c 'cd /scratch; /scratch/runall.sh'
+docker exec $DOCKERNAME /bin/bash -c 'cd /scratch; /scratch/steps.sh'
 

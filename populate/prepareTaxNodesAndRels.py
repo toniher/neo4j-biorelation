@@ -27,8 +27,13 @@ def create_taxid(line, number):
 		taxid = str(line[0]).strip()
 		rank = line[2].strip()
 		
+		list_names =  "$".join( names_list[taxid] )
+		
+		if '"' in list_names :
+			list_names = '"' + list_names + '"'
+		
 		# We assume always al params
-		statement = [ taxid, rank, scientific_list[taxid], "$".join( names_list[taxid] ) ]
+		statement = [ "TAXID:"+taxid, taxid, rank, scientific_list[taxid], list_names]
 		#print statement
 		
 		parentid[taxid] = str(line[1]).strip()
@@ -110,7 +115,7 @@ def main(argv):
 		print( len( list_statements ) )
 		
 		fileout=open( outdir + "/taxnodes.csv", 'w+')
-		fileout.write( "\t".join( [ "id", "rank", "scientific_name", "name" ] ) + "\n" )
+		fileout.write( "\t".join( [ "id:ID", "taxid:int", "rank", "scientific_name", "name:string[]" ] ) + "\n" )
 
 		for statements in list_statements :
 				process_statement( statements, fileout )
@@ -126,7 +131,7 @@ def main(argv):
 				parent_taxid = parentid[key]
 				
 				
-				statement = [ key, parent_taxid, "has_parent" ]
+				statement = [ "TAXID:"+ key, "TAXID:" + parent_taxid, "has_parent" ]
 				statements.append( statement )
 				
 				iter = iter + 1
@@ -139,7 +144,7 @@ def main(argv):
 		
 		fileout=open( outdir + "/taxrels.csv", 'w+')
 		
-		fileout.write( "\t".join( [ "start", "end", "rel" ] ) + "\n" )
+		fileout.write( "\t".join( [ "TAXID:START_ID", "TAXID:END_ID", ":TYPE" ] ) + "\n" )
 		for statements in list_statements :
 				process_statement( statements, fileout )
 		fileout.close()
