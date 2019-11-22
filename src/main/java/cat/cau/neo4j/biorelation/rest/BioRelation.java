@@ -61,12 +61,12 @@ public class BioRelation {
 		Object[] relations;
 
 		if ( type.equals( "go" ) ) {
-			label = DynamicLabel.label( "GO_TERM" );
+			label = DynamicLabel.label( "GO" );
 			property = "acc";
 
 		} else {
 			label = DynamicLabel.label( "TAXID" );
-			property = "id";
+			property = "taxid";
 			proptype = "int";
 
 		}
@@ -105,7 +105,7 @@ public class BioRelation {
 		
 		ArrayList<Long> pathNodes = new ArrayList<Long>();
 		
-		Label label = DynamicLabel.label( "GO_TERM" );
+		Label label = DynamicLabel.label( "GO" );
 		String property = "acc";
 		
 		BioRelationFunction func = new BioRelationFunction();
@@ -160,7 +160,7 @@ public class BioRelation {
 	@Path("/common/go/{list}")
 	public Response getCommonGO(@PathParam("list") String list, @Context GraphDatabaseService db) throws IOException {
 	
-		Label label = DynamicLabel.label( "GO_TERM" );
+		Label label = DynamicLabel.label( "GO" );
 		String property = "acc";
 		
 		// Two dimensional array we store all the pats
@@ -272,7 +272,7 @@ public class BioRelation {
 		}
 	
 		Label label = DynamicLabel.label( "TAXID" );
-		String property = "id";
+		String property = "taxid";
 	
 		BioRelationFunction func = new BioRelationFunction();
 
@@ -299,7 +299,7 @@ public class BioRelation {
 			for ( Long l: pathNodes ) {
 	
 				Node lNode = db.getNodeById( l );
-				Long lId = Long.parseLong( lNode.getProperty("id").toString() );
+				Long lId = Long.parseLong( lNode.getProperty("taxid").toString() );
 				String lScientific = lNode.getProperty("scientific_name").toString();
 				String lRank = lNode.getProperty("rank").toString();
 				
@@ -322,7 +322,7 @@ public class BioRelation {
 	public Response getCommonTax(@PathParam("list") String list, @Context GraphDatabaseService db) throws IOException {
 	
 		Label label = DynamicLabel.label( "TAXID" );
-		String property = "id";
+		String property = "taxid";
 	
 		// Two dimensional array we store all the pats
 		ArrayList<ArrayList<Long>> pathNodes = new ArrayList<ArrayList<Long>>();
@@ -404,7 +404,7 @@ public class BioRelation {
 	@Path("/leafnodes/go/{acc}")
 	public Response getLeafNodesGO(@PathParam("acc") String value, @Context GraphDatabaseService db) throws IOException {
 	
-		String labelStr = "GO_TERM";
+		String labelStr = "GO";
 		String property = "acc";
 		
 		BioRelationHelper helper = new BioRelationHelper();
@@ -421,7 +421,7 @@ public class BioRelation {
 	@Path("/leafnodes/go/{acc}/distance")
 	public Response getLeafNodesGODistance(@PathParam("acc") String value, @Context GraphDatabaseService db) throws IOException {
 	
-		String labelStr = "GO_TERM";
+		String labelStr = "GO";
 		String property = "acc";
 		
 		BioRelationHelper helper = new BioRelationHelper(); 
@@ -462,7 +462,7 @@ public class BioRelation {
 		String relproperty;
 
 		if ( type.equals( "go" ) ) {
-			label = "GO_TERM";
+			label = "GO";
 			relproperty = "has_go";
 		} else {
 			label = "TAXID";
