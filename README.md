@@ -10,7 +10,7 @@ You would need to import NCBI taxonomy, Gene Ontology and UniProt into your Neo4
 
 * Java 1.8
 * Maven >= 3.1
-* Compatible with Neo4j 3.1.0
+* Compatible with Neo4j 3.5.x
 
 ## INSTALL
 
@@ -44,7 +44,7 @@ You likely need to add further packages. For instance, copying [minimal-json](ht
 
 ## Docker
 
-* [Alpine version](https://hub.docker.com/r/toniher/neo4j-biorelation-alpine/)
+* [CentOS version](https://hub.docker.com/r/toniher/neo4j-biorelation-centos/)
 
 
 ## Data population scripts
@@ -55,10 +55,6 @@ We provide data population scripts at ```population``` directory for sake of con
 ## TODO
 
 * Simplify functions
-
-* Add Isoforms ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot_varsplic.fasta.gz
-
-* Add IntAct ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt
 
 * Add Molecular interaction controlled vocabulary https://www.ebi.ac.uk/ols/ontologies/mi
 
@@ -73,7 +69,6 @@ We provide data population scripts at ```population``` directory for sake of con
 * Make tests work.
 * root working in all cases
 * Dealing with exceptions
-* Consider migrating goa.sh last step
 
     (m:MOL)-[has_annotation]-(a:annotation)-[has_go]-(g:GO_TERM)
             (a:annotation)-[has_evidence]-(e:ECO_TERM)
