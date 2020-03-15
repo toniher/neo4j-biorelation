@@ -1,2 +1,2 @@
 neobolt==1.7.16
-py2neo=4.3.0
+py2neo==4.3.0
