@@ -1,10 +1,10 @@
 FROM biocorecrg/centos-perlbrew-pyenv-java:centos7
 
-ARG NEO4J_VERSION=3.5.12
+ARG NEO4J_VERSION=3.5.16
 ARG NEO4J_BIORELATION_VERSION=0.2.3
-ARG NEO4J_APOC_VERSION=3.5.0.5
+ARG NEO4J_APOC_VERSION=3.5.0.7
 ARG MINIMAL_JSON_VERSION=0.9.5
-ENV NEO4J_SHA256=3b82b72a211d1b628b64f18f4af9f10b12ed6e2fd0ad94910e11b7fef5d0d86c 
+ENV NEO4J_SHA256=3eded9065de1ddd39d519b05845da2f572b5ddb4e6440b93555927f329eaf222
 ENV NEO4J_PATH /var/lib/neo4j
 
 # Install Neo4j
@@ -53,7 +53,8 @@ RUN cd import; ln -s /scratch .
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 # Installing Python libraries
-RUN pip install neobolt py2neo
+COPY requirements.txt /
+RUN pip install -r /requirements.txt
 
 EXPOSE 7474 7473 7687 1337
 
