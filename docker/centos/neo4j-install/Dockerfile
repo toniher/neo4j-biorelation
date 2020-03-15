@@ -40,7 +40,7 @@ RUN cp neo4j-biorelation/target/neo4j-biorelation-$NEO4J_BIORELATION_VERSION.jar
 RUN cd $NEO4J_PATH/plugins; curl --silent --show-error --location --remote-name https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/${NEO4J_APOC_VERSION}/apoc-${NEO4J_APOC_VERSION}-all.jar
 
 # Install JSON minimal
-RUN cd $NEO4J_PATH/lib; curl --silent --show-error --location --remote-name http://central.maven.org/maven2/com/eclipsesource/minimal-json/minimal-json/${MINIMAL_JSON_VERSION}/minimal-json-${MINIMAL_JSON_VERSION}.jar 
+RUN cd $NEO4J_PATH/lib; curl --silent --show-error --location --remote-name https://github.com/ralfstx/minimal-json/releases/download/${MINIMAL_JSON_VERSION}/minimal-json-${MINIMAL_JSON_VERSION}.jar
 
 WORKDIR $NEO4J_PATH
 
