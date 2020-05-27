@@ -9,7 +9,7 @@
     <version>0.2.3</version>
 
     <properties>
-        <neo4j.version>3.5.12</neo4j.version>
+        <neo4j.version>4.0.4</neo4j.version>
     </properties>
 
     <dependencies>
@@ -56,7 +56,7 @@
 			<version>3.4</version>
 		</dependency>
     </dependencies>
-   
+
   <build>
    <pluginManagement>
     <plugins>
@@ -72,5 +72,5 @@
     </plugins>
    </pluginManagement>
   </build>
-    
+
 </project>

@@ -1,10 +1,10 @@
 FROM biocorecrg/centos-perlbrew-pyenv-java:centos7
 
-ARG NEO4J_VERSION=3.5.16
+ARG NEO4J_VERSION=4.0.4
 ARG NEO4J_BIORELATION_VERSION=0.2.3
-ARG NEO4J_APOC_VERSION=3.5.0.7
+ARG NEO4J_APOC_VERSION=4.0.0.12
 ARG MINIMAL_JSON_VERSION=0.9.5
-ENV NEO4J_SHA256=3eded9065de1ddd39d519b05845da2f572b5ddb4e6440b93555927f329eaf222
+ENV NEO4J_SHA256=e467b30f483132e62be0288f7db337148cea25221a80e23dba8af995a03b60a3
 ENV NEO4J_PATH /var/lib/neo4j
 
 # Install Neo4j
@@ -33,7 +33,7 @@ WORKDIR $NEO4J_SHELL_BASE
 
 # Install Neo4j Biorelation
 RUN git clone https://github.com/toniher/neo4j-biorelation
-RUN cd neo4j-biorelation; mvn clean package
+RUN cd neo4j-biorelation; git checkout neo4j4; mvn clean package
 RUN cp neo4j-biorelation/target/neo4j-biorelation-$NEO4J_BIORELATION_VERSION.jar $NEO4J_PATH/plugins
 
 # APOC
