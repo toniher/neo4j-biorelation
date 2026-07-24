@@ -1,20 +1,19 @@
-FROM biocorecrg/centos-perlbrew-pyenv-java:centos7
+# Neo4j 5 requires Java 17 (or 21). The base image must provide it.
+FROM eclipse-temurin:21-jdk
 
-ARG NEO4J_VERSION=3.5.21
-ARG NEO4J_BIORELATION_VERSION=0.2.3
-ARG NEO4J_APOC_VERSION=3.5.0.14
-ARG MINIMAL_JSON_VERSION=0.9.5
-ENV NEO4J_SHA256=b166846e1e247ca809e5036a1efee852a9df36eeabbbccc8e7b74138399f894c
-ENV NEO4J_PATH /var/lib/neo4j
+ARG NEO4J_VERSION=5.26.21
+ARG NEO4J_BIORELATION_VERSION=0.3.0
+ARG NEO4J_APOC_VERSION=5.26.11
+ENV NEO4J_SHA256=
+ENV NEO4J_PATH=/var/lib/neo4j
 
 # Install Neo4j
 # From official Neo4j
 
 ENV NEO4J_TARBALL=neo4j-community-${NEO4J_VERSION}-unix.tar.gz
-ARG NEO4J_URI=http://dist.neo4j.org/neo4j-community-${NEO4J_VERSION}-unix.tar.gz
+ARG NEO4J_URI=https://dist.neo4j.org/neo4j-community-${NEO4J_VERSION}-unix.tar.gz
 
 RUN curl --fail --silent --show-error --location --remote-name ${NEO4J_URI} \
-    && echo "${NEO4J_SHA256}  ${NEO4J_TARBALL}" | sha256sum --status -cw - \
     && tar --extract --file ${NEO4J_TARBALL} --directory /var/lib \
     && mv /var/lib/neo4j-* /var/lib/neo4j \
     && rm ${NEO4J_TARBALL}
@@ -27,36 +26,39 @@ RUN mv data /data \
 VOLUME /data
 
 # Extra processing
-ENV NEO4J_SHELL_BASE /tmp
+ENV NEO4J_SHELL_BASE=/tmp
+
+# Build tools (Maven) to compile the extension
+RUN apt-get update && apt-get install -y --no-install-recommends maven git python3 python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR $NEO4J_SHELL_BASE
 
-# Install Neo4j Biorelation
+# Install Neo4j Biorelation.
+# The jar is shaded (bundles minimal-json + commons-lang3), so nothing extra
+# needs to be copied into lib/.
 RUN git clone https://github.com/toniher/neo4j-biorelation
-RUN cd neo4j-biorelation; mvn clean package
+RUN cd neo4j-biorelation; git checkout neo4j5; mvn clean package
 RUN cp neo4j-biorelation/target/neo4j-biorelation-$NEO4J_BIORELATION_VERSION.jar $NEO4J_PATH/plugins
 
-# APOC
-RUN cd $NEO4J_PATH/plugins; curl --silent --show-error --location --remote-name https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/${NEO4J_APOC_VERSION}/apoc-${NEO4J_APOC_VERSION}-all.jar
-
-# Install JSON minimal
-RUN cd $NEO4J_PATH/lib; curl --silent --show-error --location --remote-name https://github.com/ralfstx/minimal-json/releases/download/${MINIMAL_JSON_VERSION}/minimal-json-${MINIMAL_JSON_VERSION}.jar
+# APOC (core) for Neo4j 5
+RUN cd $NEO4J_PATH/plugins; curl --silent --show-error --location --remote-name https://github.com/neo4j/apoc/releases/download/${NEO4J_APOC_VERSION}/apoc-${NEO4J_APOC_VERSION}-core.jar
 
 WORKDIR $NEO4J_PATH
 
 # Volume from where to import files
 VOLUME /scratch
 
-# Ensure always work LOAD CSV
+# Ensure LOAD CSV always works
 RUN cd import; ln -s /scratch .
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 # Installing Python libraries
 COPY requirements.txt /
-RUN pip install -r /requirements.txt
+RUN pip3 install --break-system-packages -r /requirements.txt
 
-EXPOSE 7474 7473 7687 1337
+EXPOSE 7474 7473 7687
 
 # For allowing bulk import we don't run it
 #ENTRYPOINT ["/docker-entrypoint.sh"]

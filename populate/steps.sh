@@ -184,9 +184,12 @@ echo "IMPORT ALL"
 
 cd $TMPDIR
 
-$NEO4JADMIN import --ignore-missing-nodes=true --array-delimiter=$ --delimiter=TAB --id-type=STRING \
-					--nodes:GO=$GONODES --nodes:TAXID=$TAXNODES \
-					--nodes:MOL=${GOADIR}/${INFOFILE}.protein --nodes:MOL=$ISODIR/isoforms.txt \
+# Neo4j 5: `neo4j-admin database import full <database>` replaces the old
+# `neo4j-admin import`; `--ignore-missing-nodes` became `--skip-bad-relationships`
+# and the label/type is given with `=` (`--nodes=GO=file`) instead of `--nodes:GO=file`.
+$NEO4JADMIN database import full neo4j --skip-bad-relationships=true --array-delimiter=$ --delimiter=TAB --id-type=STRING \
+					--nodes=GO=$GONODES --nodes=TAXID=$TAXNODES \
+					--nodes=MOL=${GOADIR}/${INFOFILE}.protein --nodes=MOL=$ISODIR/isoforms.txt \
 					--relationships=$GORELS --relationships=$TAXRELS \
 					--relationships=${GOADIR}/${INFOFILE}.reduced --relationships=${GOADIR}/${GOAFILE}.reduced \
 					--relationships=$ISODIR/isoform-rels.txt \

@@ -6,71 +6,76 @@
 
     <groupId>cat.cau.neo4j</groupId>
     <artifactId>neo4j-biorelation</artifactId>
-    <version>0.2.3</version>
+    <version>0.3.0</version>
 
     <properties>
-        <neo4j.version>3.5.21</neo4j.version>
+        <neo4j.version>5.26.21</neo4j.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
+        <!-- Neo4j core API. Provided at runtime by the server, so `provided` scope. -->
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j</artifactId>
             <version>${neo4j.version}</version>
+            <scope>provided</scope>
         </dependency>
+        <!-- JAX-RS API for the REST annotations. Provided by the Neo4j server
+             at runtime (Jersey), so `provided` scope keeps it out of the jar. -->
         <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-kernel</artifactId>
-            <type>test-jar</type>
-            <version>${neo4j.version}</version>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <version>2.1.6</version>
+            <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>server-api</artifactId>
-            <version>${neo4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.neo4j.app</groupId>
-            <artifactId>neo4j-server</artifactId>
-            <version>${neo4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.neo4j.app</groupId>
-            <artifactId>neo4j-server</artifactId>
-            <version>${neo4j.version}</version>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>1.19</version>
-        </dependency>
+        <!-- Bundled with the plugin jar (see maven-shade-plugin below). -->
         <dependency>
             <groupId>com.eclipsesource.minimal-json</groupId>
             <artifactId>minimal-json</artifactId>
-            <version>0.9.4</version>
+            <version>0.9.5</version>
         </dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.18.0</version>
+        </dependency>
+        <!-- Test harness for integration tests. -->
+        <dependency>
+            <groupId>org.neo4j.test</groupId>
+            <artifactId>neo4j-harness</artifactId>
+            <version>${neo4j.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-   
-  <build>
-   <pluginManagement>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-    </plugins>
-   </pluginManagement>
-  </build>
-    
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+            <!-- Produce a self-contained jar that bundles minimal-json and
+                 commons-lang3 so no extra jars need to be dropped into Neo4j lib/. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

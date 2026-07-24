@@ -8,9 +8,11 @@ This is an unmanaged extension. Details at: http://neo4j.com/docs/stable/server-
 
 You would need to import NCBI taxonomy, Gene Ontology and UniProt into your Neo4j Database. The scripts and instructions can be found at scripts directory in this repository.
 
-* Java 1.8
-* Maven >= 3.1
-* Compatible with Neo4j 3.5.x
+* Java 17 (or 21)
+* Maven >= 3.6
+* Compatible with Neo4j 5.x (developed and built against 5.26 LTS)
+
+> For the legacy Neo4j 3.5.x build, see the `master` branch.
 
 ## INSTALL
 
@@ -18,15 +20,17 @@ You would need to import NCBI taxonomy, Gene Ontology and UniProt into your Neo4
 
     mvn clean package
 
-2. Copy target/neo4j-biorelation-0.2.x.jar to the plugins/ directory of your Neo4j server.
+2. Copy target/neo4j-biorelation-0.3.x.jar to the plugins/ directory of your Neo4j server.
+
+   The jar is shaded (it bundles minimal-json and commons-lang3), so no extra jars need to be copied into the Neo4j lib/ directory.
 
 3. Configure Neo4j by adding a line to conf/neo4j.conf:
 
-    dbms.unmanaged_extension_classes=cat.cau.neo4j.biorelation.rest=/biodb
+    server.unmanaged_extension_classes=cat.cau.neo4j.biorelation.rest=/biodb
+
+   (In Neo4j 5 this setting was renamed from `dbms.unmanaged_extension_classes`.)
 
 In this case, queries will need biodb prepended.
-
-You likely need to add further packages. For instance, copying [minimal-json](http://mvnrepository.com/artifact/com.eclipsesource.minimal-json) to system/lib Neo4j directory.
 
 4. Start Neo4j server.
 

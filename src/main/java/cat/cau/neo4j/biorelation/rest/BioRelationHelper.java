@@ -1,20 +1,12 @@
 package cat.cau.neo4j.biorelation.rest;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.DynamicLabel;
-
-import org.neo4j.graphdb.Transaction;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonArray;
-import com.eclipsesource.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Hashtable;
@@ -27,73 +19,67 @@ public class BioRelationHelper {
 	JsonObject InJsonRoot;
 	String InValue;
 
-	public JsonArray arrayListNodes2JSON( ArrayList<Node> arrayNodes, GraphDatabaseService db ) {
-		
+	// NOTE: all methods that read Node properties must be called while a Neo4j
+	// transaction is open on the current thread (Neo4j 5 entities are
+	// transaction-scoped). The REST resource opens a single transaction per
+	// request and these helpers operate within it.
+
+	public JsonArray arrayListNodes2JSON( ArrayList<Node> arrayNodes ) {
+
 		JsonArray jsonArray = new JsonArray();
-		
+
 		Iterator<Node> nodeIterator = arrayNodes.iterator();
 		while(nodeIterator.hasNext()){
-			
+
 			Node lNode = nodeIterator.next();
 
 			JsonObject jsonObject = new JsonObject();
 
-			try (Transaction tx = db.beginTx()) {
+			Iterable<String> lNodeProps = lNode.getPropertyKeys();
+			Iterator<String> itrProp = lNodeProps.iterator();
+			while ( itrProp.hasNext() ) {
 
-				Iterable<String> lNodeProps = lNode.getPropertyKeys();
-				Iterator<String> itrProp = lNodeProps.iterator();
-				while ( itrProp.hasNext() ) {
+				String prop = itrProp.next();
 
-					String prop = itrProp.next();
+				jsonObject = this.addValueFromProp( jsonObject, lNode, prop );
 
-					jsonObject = this.addValueFromProp( jsonObject, lNode, prop );
-
-				}
-
-				tx.success();
 			}
 
 			jsonArray.add( jsonObject );
 
 		}
-		
+
 		return jsonArray;
 	}
 
-	public JsonObject arrayListNodes2JSONkeyRoot( ArrayList<Node> arrayNodes, String keyRoot, GraphDatabaseService db ) {
-		
+	public JsonObject arrayListNodes2JSONkeyRoot( ArrayList<Node> arrayNodes, String keyRoot ) {
+
 		JsonObject jsonRoot = new JsonObject();
-		
+
 		Iterator<Node> nodeIterator = arrayNodes.iterator();
 		while(nodeIterator.hasNext()){
-			
+
 			Node lNode = nodeIterator.next();
 			String prop;
 			String propValue = "undefined"; // In case something is wrong
 
 			JsonObject jsonObject = new JsonObject();
 
-			try (Transaction tx = db.beginTx()) {
+			Iterable<String> lNodeProps = lNode.getPropertyKeys();
+			Iterator<String> itrProp = lNodeProps.iterator();
+			while ( itrProp.hasNext() ) {
 
-				Iterable<String> lNodeProps = lNode.getPropertyKeys();
-				Iterator<String> itrProp = lNodeProps.iterator();
-				while ( itrProp.hasNext() ) {
+				prop = itrProp.next();
 
-					prop = itrProp.next();
+				jsonObject = this.addValueFromProp( jsonObject, lNode, prop );
 
-					jsonObject = this.addValueFromProp( jsonObject, lNode, prop );
+				if ( prop.equals( keyRoot ) ) {
 
-					if ( prop.equals( keyRoot ) ) {
-
-						this.addValueFromProp2Root( jsonRoot, lNode, prop );
-						propValue = this.InValue;
-						jsonRoot = this.InJsonRoot;
-
-					}
+					this.addValueFromProp2Root( jsonRoot, lNode, prop );
+					propValue = this.InValue;
+					jsonRoot = this.InJsonRoot;
 
 				}
-
-				tx.success();
 
 			}
 
@@ -105,48 +91,43 @@ public class BioRelationHelper {
 
 
 		}
-	
+
 	return jsonRoot;
 
 	}
 
 
-	public JsonArray arrayListNodes2JSONextraInt( ArrayList<Node> arrayNodes, ArrayList<Integer> arrayInteger, String extra, GraphDatabaseService db ) {
-		
+	public JsonArray arrayListNodes2JSONextraInt( ArrayList<Node> arrayNodes, ArrayList<Integer> arrayInteger, String extra ) {
+
 		JsonArray jsonArray = new JsonArray();
-		
+
 		Integer intIter = 0;
-		
+
 		Iterator<Node> nodeIterator = arrayNodes.iterator();
 		while(nodeIterator.hasNext()){
-			
-			Node lNode = nodeIterator.next();
-	
-			JsonObject jsonObject = new JsonObject();
-	
-			try (Transaction tx = db.beginTx()) {
-	
-				Iterable<String> lNodeProps = lNode.getPropertyKeys();
-				Iterator<String> itrProp = lNodeProps.iterator();
-				while ( itrProp.hasNext() ) {
-	
-						String prop = itrProp.next();
 
-						jsonObject = this.addValueFromProp( jsonObject, lNode, prop );
-						
-						// Adding extra arrayvalue
-						jsonObject.add( extra, arrayInteger.get( intIter ) );
-						
-				}
-	
-				tx.success();
+			Node lNode = nodeIterator.next();
+
+			JsonObject jsonObject = new JsonObject();
+
+			Iterable<String> lNodeProps = lNode.getPropertyKeys();
+			Iterator<String> itrProp = lNodeProps.iterator();
+			while ( itrProp.hasNext() ) {
+
+					String prop = itrProp.next();
+
+					jsonObject = this.addValueFromProp( jsonObject, lNode, prop );
+
+					// Adding extra arrayvalue
+					jsonObject.add( extra, arrayInteger.get( intIter ) );
+
 			}
-	
+
 			jsonArray.add( jsonObject );
 			intIter++;
-	
+
 		}
-		
+
 		return jsonArray;
 	}
 
@@ -172,7 +153,7 @@ public class BioRelationHelper {
 
 				value = propValue.toString();
 
-				jsonObject = this.addValue2JsonObject( jsonObject, prop, value ); 
+				jsonObject = this.addValue2JsonObject( jsonObject, prop, value );
 
 			}
 
@@ -186,14 +167,14 @@ public class BioRelationHelper {
 		if ( StringUtils.isNumeric( value ) ) {
 			int valueInt = Integer.parseInt( value );
 			double valueFloat = Float.parseFloat( value );
-			
+
 			if ( valueInt == valueFloat ) {
 				jsonObject.add( prop, valueInt );
 			} else {
 				jsonObject.add( prop, valueFloat );
 			}
 		} else {
-	
+
 			jsonObject.add( prop, value );
 		}
 
@@ -206,14 +187,14 @@ public class BioRelationHelper {
 		if ( StringUtils.isNumeric( value ) ) {
 			int valueInt = Integer.parseInt( value );
 			double valueFloat = Float.parseFloat( value );
-			
+
 			if ( valueInt == valueFloat ) {
 				jsonArray.add( valueInt );
 			} else {
 				jsonArray.add( valueFloat );
 			}
 		} else {
-	
+
 			jsonArray.add( value );
 		}
 
@@ -235,22 +216,22 @@ public class BioRelationHelper {
 
 	}
 
-	public JsonObject hashMapNodes2JSON( Hashtable<String, ArrayList<Node>> hashTableNodes, GraphDatabaseService db ) {
+	public JsonObject hashMapNodes2JSON( Hashtable<String, ArrayList<Node>> hashTableNodes ) {
 
 		JsonObject jsonObject = new JsonObject();
-	
+
 		Set<String> keys = hashTableNodes.keySet();
 		for(String key: keys){
 				ArrayList<Node> arrayNodes = hashTableNodes.get( key );
-				JsonArray jsonArray = arrayListNodes2JSON( arrayNodes, db );
+				JsonArray jsonArray = arrayListNodes2JSON( arrayNodes );
 				jsonObject.add( key, jsonArray );
 		}
-	
+
 		return jsonObject;
 	}
 
 	public static boolean allElementsTheSame(String[] array) {
-	
+
 		if (array.length == 0) {
 			return true;
 		} else {
@@ -260,113 +241,104 @@ public class BioRelationHelper {
 					return false;
 				}
 			}
-			
+
 			return true;
-	
+
 		}
 	}
-	
+
 	public ArrayList<Long> nodes2Array( Iterable<Node> ListNodes ) {
-		
+
 		ArrayList<Long> pathNodes = new ArrayList<Long>();
-		
+
 		Iterator<Node> itr = ListNodes.iterator();
 		while ( itr.hasNext() ) {
-			
-			pathNodes.add( itr.next().getId() ); 
+
+			pathNodes.add( itr.next().getId() );
 		}
-		
+
 		return pathNodes;
 	}
-	
-	public ArrayList<Node> nonRedundantArrayNodeList( ArrayList<Node> inputList, GraphDatabaseService db ) {
+
+	public ArrayList<Node> nonRedundantArrayNodeList( ArrayList<Node> inputList ) {
 
 		Set<Integer> listNodeIds = new HashSet<Integer>();
 		ArrayList<Node> outputList = new ArrayList<Node>();
 
 		Iterator<Node> nodeIterator = inputList.iterator();
 
-		try (Transaction tx = db.beginTx()) {
+		while(nodeIterator.hasNext()){
 
-			while(nodeIterator.hasNext()){
-				
-				Node lNode = nodeIterator.next();
-	
-				Iterable<String> lNodeProps = lNode.getPropertyKeys();
-				Iterator<String> itrProp = lNodeProps.iterator();
-				while ( itrProp.hasNext() ) {
-	
-					String prop = itrProp.next();
-	
-					if ( prop.equals("id") ) {
-						String value = lNode.getProperty( prop ).toString();
-						if ( StringUtils.isNumeric( value ) ) {
-							int valueInt = Integer.parseInt( value );
-	
-							if ( ! listNodeIds.contains( valueInt ) ) {
-								listNodeIds.add( valueInt );
-								outputList.add( lNode );
-							}
-						} 
+			Node lNode = nodeIterator.next();
+
+			Iterable<String> lNodeProps = lNode.getPropertyKeys();
+			Iterator<String> itrProp = lNodeProps.iterator();
+			while ( itrProp.hasNext() ) {
+
+				String prop = itrProp.next();
+
+				if ( prop.equals("id") ) {
+					String value = lNode.getProperty( prop ).toString();
+					if ( StringUtils.isNumeric( value ) ) {
+						int valueInt = Integer.parseInt( value );
+
+						if ( ! listNodeIds.contains( valueInt ) ) {
+							listNodeIds.add( valueInt );
+							outputList.add( lNode );
+						}
 					}
 				}
 			}
-
 		}
 
 		return( outputList );
 
 	}
-	
-	public ArrayList<Node> minArrayNodeList( ArrayList<Node> inputList, Integer min, GraphDatabaseService db ) {
+
+	public ArrayList<Node> minArrayNodeList( ArrayList<Node> inputList, Integer min ) {
 
 		Hashtable<Integer, Integer> countNodeIds= new Hashtable<Integer, Integer>();
 		Hashtable<Integer, Node> tableNodes= new Hashtable<Integer, Node>();
 
-		Set<Integer> listNodeIds = new HashSet<Integer>();
 		ArrayList<Node> outputList = new ArrayList<Node>();
 
 		Iterator<Node> nodeIterator = inputList.iterator();
 
-		try (Transaction tx = db.beginTx()) {
+		while(nodeIterator.hasNext()){
 
-			while(nodeIterator.hasNext()){
-				
-				Node lNode = nodeIterator.next();
-	
-				Iterable<String> lNodeProps = lNode.getPropertyKeys();
-				Iterator<String> itrProp = lNodeProps.iterator();
-				while ( itrProp.hasNext() ) {
-	
-					String prop = itrProp.next();
-	
-					if ( prop.equals("id") ) {
-						String value = lNode.getProperty( prop ).toString();
-						if ( StringUtils.isNumeric( value ) ) {
-							int valueInt = Integer.parseInt( value );
-	
-							if ( ! countNodeIds.containsKey( valueInt ) ) {
-								countNodeIds.put( valueInt, 1 );
-								tableNodes.put( valueInt, lNode );
-							} else {
-								Integer count = countNodeIds.get( valueInt );
-								countNodeIds.put( valueInt, count + 1 );
-							}
-						} 
+			Node lNode = nodeIterator.next();
+
+			Iterable<String> lNodeProps = lNode.getPropertyKeys();
+			Iterator<String> itrProp = lNodeProps.iterator();
+			while ( itrProp.hasNext() ) {
+
+				String prop = itrProp.next();
+
+				if ( prop.equals("id") ) {
+					String value = lNode.getProperty( prop ).toString();
+					if ( StringUtils.isNumeric( value ) ) {
+						int valueInt = Integer.parseInt( value );
+
+						if ( ! countNodeIds.containsKey( valueInt ) ) {
+							countNodeIds.put( valueInt, 1 );
+							tableNodes.put( valueInt, lNode );
+						} else {
+							Integer count = countNodeIds.get( valueInt );
+							countNodeIds.put( valueInt, count + 1 );
+						}
 					}
 				}
 			}
-			
-			Set<Integer> nodeIds = countNodeIds.keySet();
-			for ( Integer nodeId: nodeIds ){
-				
-				Integer count = countNodeIds.get( nodeId );
+		}
 
-				if ( count >= min ) {
-					Node inNode = tableNodes.get( nodeId );
-					outputList.add( inNode );
-				}
-				
+		Set<Integer> nodeIds = countNodeIds.keySet();
+		for ( Integer nodeId: nodeIds ){
+
+			Integer count = countNodeIds.get( nodeId );
+
+			if ( count >= min ) {
+				Node inNode = tableNodes.get( nodeId );
+				outputList.add( inNode );
 			}
 
 		}
@@ -375,7 +347,7 @@ public class BioRelationHelper {
 
 	}
 
-	public ArrayList<Node> ancestorArrayNodeList( ArrayList<Node> inputList, String type, GraphDatabaseService db ) {
+	public ArrayList<Node> ancestorArrayNodeList( ArrayList<Node> inputList, String type ) {
 
 		Hashtable<String, ArrayList<Node>> listNodesByType= new Hashtable<String, ArrayList<Node>>();
 
@@ -385,42 +357,36 @@ public class BioRelationHelper {
 
 		Iterator<Node> nodeIterator = inputList.iterator();
 
-		try (Transaction tx = db.beginTx()) {
+		while(nodeIterator.hasNext()){
 
-			while(nodeIterator.hasNext()){
-				
-				Node lNode = nodeIterator.next();
-	
-				int nodeId;
+			Node lNode = nodeIterator.next();
 
-				Iterable<String> lNodeProps = lNode.getPropertyKeys();
-				Iterator<String> itrProp = lNodeProps.iterator();
-				while ( itrProp.hasNext() ) {
+			Iterable<String> lNodeProps = lNode.getPropertyKeys();
+			Iterator<String> itrProp = lNodeProps.iterator();
+			while ( itrProp.hasNext() ) {
 
-					String prop = itrProp.next();
+				String prop = itrProp.next();
 
-					if ( prop.equals( "term_type" ) ) {
-						nodeType = lNode.getProperty( prop ).toString();
+				if ( prop.equals( "term_type" ) ) {
+					nodeType = lNode.getProperty( prop ).toString();
 
-						if ( ! listNodesByType.containsKey( nodeType ) ) {
-							listNodesByType.put( nodeType, new ArrayList<Node>() );
-						}
+					if ( ! listNodesByType.containsKey( nodeType ) ) {
+						listNodesByType.put( nodeType, new ArrayList<Node>() );
 					}
-
-					ArrayList<Node> tempArray = listNodesByType.get( nodeType );
-					tempArray.add( lNode );
-					listNodesByType.put( nodeType, tempArray );
-
 				}
 
+				ArrayList<Node> tempArray = listNodesByType.get( nodeType );
+				tempArray.add( lNode );
+				listNodesByType.put( nodeType, tempArray );
+
 			}
-			
-			Set<String> types = listNodesByType.keySet();
-			for ( String nType: types ){
-				
-					// Process for type
-				
-			}
+
+		}
+
+		Set<String> types = listNodesByType.keySet();
+		for ( String nType: types ){
+
+				// Process for type
 
 		}
 
@@ -429,5 +395,3 @@ public class BioRelationHelper {
 	}
 
 }
-
-

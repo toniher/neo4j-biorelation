@@ -3,7 +3,7 @@ From: toniher/neo4j-biorelation-centos
 
 %labels
 	Maintainer Toni Hermoso Pulido
-	Version 0.1.0
+	Version 0.3.0
 
 %files
 	neo4j.conf /var/lib/neo4j/conf

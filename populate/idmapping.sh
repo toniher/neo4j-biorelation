@@ -31,10 +31,10 @@ echo "Preparing ID files"
 #done
 
 
-echo "CREATE INDEX ON :XREF(id);"
-$NEO4JSHELL "CREATE INDEX ON :XREF(id);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
-echo "CREATE INDEX ON :XREF(source);"
-$NEO4JSHELL "CREATE INDEX ON :XREF(source);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX xref_id ..."
+$NEO4JSHELL "CREATE INDEX xref_id IF NOT EXISTS FOR (n:XREF) ON (n.id);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
+echo "CREATE INDEX xref_source ..."
+$NEO4JSHELL "CREATE INDEX xref_source IF NOT EXISTS FOR (n:XREF) ON (n.source);" >> $MOMENTDIR/syn.out 2>> $MOMENTDIR/syn.err
 
 for file in $DIR/*
 do

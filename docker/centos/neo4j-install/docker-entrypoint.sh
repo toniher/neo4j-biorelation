@@ -40,20 +40,19 @@ if [ "$1" == "neo4j" ]; then
         NEO4J_causalClustering_raftListenAddress \
         NEO4J_causalClustering_raftAdvertisedAddress
 
-    # Custom settings for dockerized neo4j
-    : ${NEO4J_dbms_tx__log_rotation_retention__policy:=100M size}
-    : ${NEO4J_dbms_memory_pagecache_size:=24G}
-    : ${NEO4J_wrapper_java_additional:=-Dneo4j.ext.udc.source=docker}
-    : ${NEO4J_dbms_memory_heap_initial__size:=24G}
-    : ${NEO4J_dbms_memory_heap_max__size:=36G}
-    : ${NEO4J_dbms_connectors_default__listen__address:=0.0.0.0}
-    : ${NEO4J_dbms_connector_http_listen__address:=0.0.0.0:7474}
-    : ${NEO4J_dbms_connector_https_listen__address:=0.0.0.0:7473}
-    : ${NEO4J_dbms_connector_bolt_listen__address:=0.0.0.0:7687}
+    # Custom settings for dockerized neo4j (Neo4j 5 namespaces: server.*, db.*)
+    : ${NEO4J_db_tx__log_rotation_retention__policy:=100M size}
+    : ${NEO4J_server_memory_pagecache_size:=24G}
+    : ${NEO4J_server_memory_heap_initial__size:=24G}
+    : ${NEO4J_server_memory_heap_max__size:=36G}
+    : ${NEO4J_server_default__listen__address:=0.0.0.0}
+    : ${NEO4J_server_http_listen__address:=0.0.0.0:7474}
+    : ${NEO4J_server_https_listen__address:=0.0.0.0:7473}
+    : ${NEO4J_server_bolt_listen__address:=0.0.0.0:7687}
 
     # Variables specific to Neo4j-biorelation
     : ${NEO4J_dbms_security_auth__enabled:="false"}
-    : ${NEO4J_dbms_unmanaged__extension__classes:="cat.cau.neo4j.biorelation.rest=/biodb"}
+    : ${NEO4J_server_unmanaged__extension__classes:="cat.cau.neo4j.biorelation.rest=/biodb"}
 
     # Variables for APOC
     : ${NEO4J_apoc_import_file_enabled:="true"}
@@ -62,24 +61,20 @@ if [ "$1" == "neo4j" ]; then
         find /conf -type f -exec cp {} conf \;
     fi
 
-    if [ -d /ssl ]; then
-        NEO4J_dbms_directories_certificates="/ssl"
-    fi
-
     if [ -d /plugins ]; then
-        NEO4J_dbms_directories_plugins="/plugins"
+        NEO4J_server_directories_plugins="/plugins"
     fi
 
     if [ -d /logs ]; then
-        NEO4J_dbms_directories_logs="/logs"
+        NEO4J_server_directories_logs="/logs"
     fi
 
     #if [ -d /import ]; then
-    #   NEO4J_dbms_directories_import="/import"
+    #   NEO4J_server_directories_import="/import"
     #fi
 
     if [ -d /metrics ]; then
-        NEO4J_dbms_directories_metrics="/metrics"
+        NEO4J_server_directories_metrics="/metrics"
     fi
 
     if [ "${NEO4J_AUTH:-}" == "none" ]; then
@@ -91,7 +86,8 @@ if [ "$1" == "neo4j" ]; then
             exit 1
         fi
         # Will exit with error if users already exist (and print a message explaining that)
-        bin/neo4j-admin set-initial-password "${password}" || true
+        # Neo4j 5: the command moved under the `dbms` subcommand group.
+        bin/neo4j-admin dbms set-initial-password "${password}" || true
     elif [ -n "${NEO4J_AUTH:-}" ]; then
         echo "Invalid value for NEO4J_AUTH: '${NEO4J_AUTH}'"
         exit 1
