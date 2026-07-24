@@ -1,28 +1,14 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import csv
 import sys
-import pprint
-
-pp = pprint.PrettyPrinter(indent=4)
-
 
 # Hashes for storing stuff
 parentid={}
 scientific_list={}
 names_list={}
 
-numiter = 5000
 
-def process_statement( statements, fileout ):
-		
-		for statement in statements:
-			fileout.write( "\t".join( statement ) + "\n" )
-		
-		return True
-
-
-def create_taxid(line, number):
+def create_taxid(line):
 	
 		taxid = str(line[0]).strip()
 		rank = line[2].strip()
@@ -49,9 +35,8 @@ def main(argv):
 		names = sys.argv[2]
 		outdir = sys.argv[3]
 	
-		reader =  csv.reader(open(names),delimiter="|")
-		
-		iter = 0
+		reader =  csv.reader(open(names),delimiter="|",quoting=csv.QUOTE_NONE)
+
 		taxidsave = 1
 		scientific = ''
 		names = []
@@ -95,58 +80,22 @@ def main(argv):
 		scientific_list[str(taxidsave)] = scientific
 		names_list[str(taxidsave)] = names
 		
-		reader = csv.reader(open(nodes),delimiter="|")
-		iter = 0
-		
-		list_statements =  []
-		statements = []
-		
-		for row in reader:
-				statement = create_taxid(row, iter)
-				statements.append( statement )
-				iter = iter + 1
-				if ( iter > numiter ):
-						list_statements.append( statements )
-						iter = 0
-						statements = []
-		
-		list_statements.append( statements )
-		
-		print( len( list_statements ) )
-		
+		# Nodes: write each taxon straight out. create_taxid() also populates
+		# parentid as a side effect, which the relationships pass below relies on.
+		reader = csv.reader(open(nodes),delimiter="|",quoting=csv.QUOTE_NONE)
+
 		fileout=open( outdir + "/taxnodes.csv", 'w+')
 		fileout.write( "\t".join( [ "id:ID", "taxid:int", "rank", "scientific_name", "name:string[]" ] ) + "\n" )
-
-		for statements in list_statements :
-				process_statement( statements, fileout )
+		for row in reader:
+				fileout.write( "\t".join( create_taxid(row) ) + "\n" )
 		fileout.close()
-	
-		iter = 0
-		
-		list_statements =  []
-		statements = []
-		
-		for key in parentid:
-		
-				parent_taxid = parentid[key]
-				
-				
-				statement = [ "TAXID:"+ key, "TAXID:" + parent_taxid, "has_parent" ]
-				statements.append( statement )
-				
-				iter = iter + 1
-				if ( iter > numiter ):
-						list_statements.append( statements )
-						iter = 0
-						statements = []
-		
-		list_statements.append( statements )
-		
+
+		# Relationships: one has_parent edge per taxon.
 		fileout=open( outdir + "/taxrels.csv", 'w+')
-		
 		fileout.write( "\t".join( [ "TAXID:START_ID", "TAXID:END_ID", ":TYPE" ] ) + "\n" )
-		for statements in list_statements :
-				process_statement( statements, fileout )
+		for key in parentid:
+				parent_taxid = parentid[key]
+				fileout.write( "\t".join( [ "TAXID:"+ key, "TAXID:" + parent_taxid, "has_parent" ] ) + "\n" )
 		fileout.close()
 
 

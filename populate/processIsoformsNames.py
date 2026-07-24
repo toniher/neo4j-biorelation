@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import csv
 import sys
-import pprint
-import re
 
 def main(argv):
     
@@ -12,7 +9,7 @@ def main(argv):
 
     isoformfile = sys.argv[1]
     
-    reader = csv.reader(open(isoformfile),delimiter="\t")
+    reader = csv.reader(open(isoformfile),delimiter="\t",quoting=csv.QUOTE_NONE)
     
     listiso = []
     listpre = None

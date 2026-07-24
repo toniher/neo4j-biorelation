@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import csv
 import sys
-import pprint
 
 def main(argv):
 
@@ -14,14 +12,14 @@ def main(argv):
 
         relationshipmap={}
 
-        reader = csv.reader(open(termfile),delimiter="\t")
+        reader = csv.reader(open(termfile),delimiter="\t",quoting=csv.QUOTE_NONE)
         
         for row in reader:
             
             relationshipmap[str(row[0])] = row[1]
 
 
-        reader = csv.reader(open(term2termfile),delimiter="\t")
+        reader = csv.reader(open(term2termfile),delimiter="\t",quoting=csv.QUOTE_NONE)
         
         print( ":TYPE\tGO:START_ID\tGO:END_ID" )
 

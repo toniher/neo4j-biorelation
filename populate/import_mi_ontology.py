@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import networkx
 import obonet
 import sys
+import json
 import logging
 import re
 import argparse
@@ -21,16 +22,16 @@ conf["host"] = "localhost"
 conf["port"] = 7687
 conf["protocol"] = "bolt"
 
-if len( opts.config ) > 0:	
-		with open(opts.config) as json_data_file:
+if len( opts.config ) > 0:
+		with open(opts.config[0]) as json_data_file:
 				data = json.load(json_data_file)
-				
-				if data.has_key("neo4j"):
-								if data["neo4j"].has_key("host"):
+
+				if "neo4j" in data:
+								if "host" in data["neo4j"]:
 												conf["host"] = data["neo4j"]["host"]
-								if data["neo4j"].has_key("protocol"):
+								if "protocol" in data["neo4j"]:
 												conf["protocol"] = data["neo4j"]["protocol"]
-								if data["neo4j"].has_key("port"):
+								if "port" in data["neo4j"]:
 												conf["port"] = data["neo4j"]["port"]
 
 server = conf["protocol"]+"://"+conf["host"]+":"+str( conf["port"] )
@@ -118,7 +119,7 @@ for n in obograph.nodes(data=True):
 
 
 def process_statement( statement, graph ):
-    
+
     tx = graph.begin()
 
     #print statements
@@ -127,24 +128,22 @@ def process_statement( statement, graph ):
     #print statement
     tx.run(statement)
 
-    tx.process()
-    tx.commit()
+    graph.commit(tx)
 
 def process_relationship( label, statement, graph ):
-	
+
 	tx = graph.begin()
-	
+
 	#print statements
 	logging.info('proc sent')
 
 	start = graph.nodes.match(label, id=statement[0] ).first()
 	end = graph.nodes.match(label, id=statement[1] ).first()
 	rel = Relationship( start, statement[2], end )
-	
+
 	tx.create( rel )
-	
-	tx.process()
-	tx.commit()
+
+	graph.commit(tx)
 
 def create_cyper_keys( node ) :
 	
@@ -168,7 +167,9 @@ graph = Graph(server)
 
 label = "MI"
 
-idxout = graph.run("CREATE CONSTRAINT ON (n:"+label+") ASSERT n.id IS UNIQUE")
+# Neo4j 5: `CREATE CONSTRAINT ON (n:L) ASSERT ...` was replaced by
+# `CREATE CONSTRAINT ... FOR (n:L) REQUIRE ...` (the ON/ASSERT form is removed).
+idxout = graph.run("CREATE CONSTRAINT IF NOT EXISTS FOR (n:"+label+") REQUIRE n.id IS UNIQUE")
 
 for n in nodes :
 	

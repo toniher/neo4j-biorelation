@@ -1,11 +1,6 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import csv
 import sys
-import pprint
-
-pp = pprint.PrettyPrinter(indent=4)
-
 
 # Hashes for storing stuff
 gomap={}
@@ -18,7 +13,7 @@ def main(argv):
 		gofile = sys.argv[1]
 		goafile = sys.argv[2]
 	
-		reader =  csv.reader(open(gofile),delimiter="\t")
+		reader =  csv.reader(open(gofile),delimiter="\t",quoting=csv.QUOTE_NONE)
 
 		for row in reader:
 			goid = row[0]
@@ -26,7 +21,7 @@ def main(argv):
 			gomap[goacc] = goid
 
 		
-		readergoa =  csv.reader(open(goafile),delimiter="\t")
+		readergoa =  csv.reader(open(goafile),delimiter="\t",quoting=csv.QUOTE_NONE)
 
 		for row in readergoa:
 			goacc = row[2]

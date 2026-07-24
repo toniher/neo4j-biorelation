@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import csv
 import sys
-import pprint
 
 def main(argv):
 
@@ -14,7 +12,9 @@ def main(argv):
 
         definition_list={}
 
-        reader = csv.reader(open(termdeffile),delimiter="\t")
+        # QUOTE_NONE: these are TAB-delimited files whose fields (GO definitions)
+        # can contain literal double quotes; treat them as plain text, not CSV quoting.
+        reader = csv.reader(open(termdeffile),delimiter="\t",quoting=csv.QUOTE_NONE)
         
         for row in reader:
             
@@ -23,7 +23,7 @@ def main(argv):
             definition_list[str(row[0])] = definition
 
 
-        reader = csv.reader(open(termfile),delimiter="\t")
+        reader = csv.reader(open(termfile),delimiter="\t",quoting=csv.QUOTE_NONE)
         
         print( "id:ID\tname\tterm_type\tacc\tdefinition" )
 

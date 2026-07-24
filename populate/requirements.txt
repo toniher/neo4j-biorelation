@@ -1,3 +1,7 @@
+# These dependencies are ONLY needed by the optional import_mi_ontology.py
+# (the "Molecular Interaction controlled vocabulary" step, not wired into
+# steps.sh). The core bulk-load pipeline run by steps.sh uses only the Python
+# standard library (csv, sys, re) and needs nothing installed here.
 py2neo==2021.2.4
 networkx
 obonet==0.2.5

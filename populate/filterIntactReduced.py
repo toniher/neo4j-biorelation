@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import csv
 import sys
-import pprint
 import re
 
 def main(argv):
@@ -12,7 +10,7 @@ def main(argv):
 
     intactfile = sys.argv[1]
 
-    reader = csv.reader(open(intactfile),delimiter="\t")
+    reader = csv.reader(open(intactfile),delimiter="\t",quoting=csv.QUOTE_NONE)
     
     for row in reader:
         
@@ -24,17 +22,17 @@ def main(argv):
         update = row[5]
         
         # Interaction detection method(s)
-        match1 = re.findall( "psi-mi:\"(\S+)\"", row[2] )
+        match1 = re.findall( r'psi-mi:"(\S+)"', row[2] )
         if len( match1 ) > 0 :
             method = match1[0]
 
         # Interaction type
-        match2 = re.findall( "psi-mi:\"(\S+)\"", row[3] )
+        match2 = re.findall( r'psi-mi:"(\S+)"', row[3] )
         if len( match2 ) > 0 :
             intype = match2[0]
             
         # Confidence
-        match3 = re.findall( "intact\-miscore\:(\S+)", row[4] )
+        match3 = re.findall( r'intact-miscore:(\S+)', row[4] )
         if len( match3 ) > 0 :
             confidence = match3[0]
         

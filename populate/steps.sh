@@ -95,9 +95,12 @@ if [ "$DOWNIFEXISTS" -eq "1" ]; then
 	
 fi
 
-# Base entries
-cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { $F[1]=~s/\"/\\"/g; print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
-cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
+# Base entries.
+# neo4j-admin import uses `"` as the quote char, so a literal quote inside the
+# name column is escaped by doubling it (`"` -> `""`), matching the convention
+# in prepareTaxNodesAndRels.py. (Previously this line was duplicated and the
+# second, non-escaping copy silently clobbered the first.)
+cut -f 2,4,6 $INFOFILE | perl -F'\t' -lane ' if ($F[0]!~/^\!/ ) { $F[1]=~s/"/""/g; print join( "\t", @F[0..2] ); } ' > $INFOFILE.protein
 
 echo -e "id:ID\tname\ttype" |cat - $INFOFILE.protein > $MOMENTDIR/tempfile && mv $MOMENTDIR/tempfile $INFOFILE.protein
 
@@ -187,7 +190,10 @@ cd $TMPDIR
 # Neo4j 5: `neo4j-admin database import full <database>` replaces the old
 # `neo4j-admin import`; `--ignore-missing-nodes` became `--skip-bad-relationships`
 # and the label/type is given with `=` (`--nodes=GO=file`) instead of `--nodes:GO=file`.
-$NEO4JADMIN database import full neo4j --skip-bad-relationships=true --array-delimiter=$ --delimiter=TAB --id-type=STRING \
+# `--overwrite-destination=true` lets the import be re-run over an existing `neo4j`
+# database (otherwise it aborts if store files already exist).
+# The array delimiter `$` is single-quoted so the shell never tries to expand it.
+$NEO4JADMIN database import full neo4j --overwrite-destination=true --skip-bad-relationships=true --array-delimiter='$' --delimiter=TAB --id-type=STRING \
 					--nodes=GO=$GONODES --nodes=TAXID=$TAXNODES \
 					--nodes=MOL=${GOADIR}/${INFOFILE}.protein --nodes=MOL=$ISODIR/isoforms.txt \
 					--relationships=$GORELS --relationships=$TAXRELS \

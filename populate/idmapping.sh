@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -ueo pipefail
 
 # CONFIG parameters
@@ -6,6 +8,15 @@ set -a
 . ./vars.sh
 
 set +a
+
+# This optional step loads UniProt idmapping xrefs and is OFF by default:
+# IDMAPDIR / IDMAPFILEPATH are commented out in vars.sh. Bail out cleanly here
+# instead of dying on an unbound variable (set -u) further down.
+if [ -z "${IDMAPDIR:-}" ]; then
+	echo "IDMAPDIR is not set in vars.sh — the optional xref idmapping step is disabled." >&2
+	echo "Uncomment the IDmapping URL/paths in vars.sh and prepare the id-part files to enable it." >&2
+	exit 0
+fi
 
 #mkdir -p $IDMAPDIR
 
