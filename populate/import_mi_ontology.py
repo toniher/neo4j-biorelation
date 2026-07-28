@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import networkx
 import obonet
 import sys
 import json
